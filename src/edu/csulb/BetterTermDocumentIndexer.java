@@ -1,17 +1,5 @@
 package edu.csulb;
 
-import cecs429.documents.DirectoryCorpus;
-import cecs429.documents.Document;
-import cecs429.documents.DocumentCorpus;
-import cecs429.index.Index;
-import cecs429.index.Posting;
-import cecs429.index.TermDocumentIndex;
-import cecs429.text.BasicTokenProcessor;
-import cecs429.text.EnglishTokenStream;
-import javafx.scene.shape.Path;
-import jdk.nashorn.internal.parser.JSONParser;
-
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -19,22 +7,21 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Scanner;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-import com.google.gson.stream.JsonReader;
-import com.sun.imageio.plugins.common.InputStreamAdapter;
+
+import cecs429.documents.Document;
+import cecs429.documents.DocumentCorpus;
+import cecs429.index.Index;
+import cecs429.index.TermDocumentIndex;
+import cecs429.text.BasicTokenProcessor;
+import cecs429.text.EnglishTokenStream;
+// import javafx.scene.shape.Path;
+// import jdk.nashorn.internal.parser.JSONParser;
 
 public class BetterTermDocumentIndexer {
 	public static void main(String[] args) {

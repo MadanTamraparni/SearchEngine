@@ -1,5 +1,6 @@
 package edu.csulb;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashSet;
@@ -15,27 +16,41 @@ import cecs429.index.Posting;
 import cecs429.index.TermDocumentIndex;
 import cecs429.text.BasicTokenProcessor;
 import cecs429.text.EnglishTokenStream;
+import cecs429.text.TokenStream;
 
 public class TermDocumentIndexerMain {
 	public static void main(String[] args)
 	{
-		DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(Paths.get("").toAbsolutePath(), ".txt");
-		Index index = indexCorpus(corpus) ;
-		// We aren't ready to use a full query parser; for now, we'll only support single-term queries.
-		/*List<String> list = index.getVocabulary();
-		for(int i=0; i < list.size(); i++)
-		{
-			System.out.println(list.get(i));
-		}*/
-		Scanner sc = new Scanner(System.in);
-		while(sc.hasNext())
-		{
-			String query = sc.next();
-			//String query = "whale"; // hard-coded search for "whale"
-			for (Posting p : index.getPostings(query)) {
-				System.out.println("Document ID " + p.getDocumentId());
+		//DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(Paths.get("").toAbsolutePath(), ".txt");
+        String path = "";
+        Scanner in = new Scanner(System.in);
+        while(true){
+            System.out.print("Enter document directory: ");
+            path = in.nextLine();
+            File testDir = new File(path);
+            if(testDir.isDirectory()){
+				System.out.println("Directory Existed. Procceed to indexing...");
+				break;
 			}
-		}
+            System.out.print("Directory does not exist. ");
+        }
+
+        DocumentCorpus corpus = DirectoryCorpus.loadJsonDirectory(new File(path).toPath(),".json");
+        Index index = indexCorpus(corpus) ;
+        // We aren't ready to use a full query parser; for now, we'll only support single-term queries.
+        String query = "";
+        while(true){
+            System.out.print("Enter search term: ");
+            query = in.nextLine();
+            if(query.equals("q")) break;
+            for (Posting p : index.getPostings(query)) {
+				System.out.println("Document ID " + p.getDocumentId());
+				// Below print line only for tracing the index
+				//System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
+            }
+            System.out.println("q entry for quit.");
+        }
+        in.close();
 	}
 	
 	private static Index indexCorpus(DocumentCorpus corpus) {
@@ -55,10 +70,9 @@ public class TermDocumentIndexerMain {
 		Iterable<Document> it = corpus.getDocuments();
 		
 		for(Document doc : it) {
-			EnglishTokenStream eng = new EnglishTokenStream(doc.getContent());
-			Iterable<String> strIter = eng.getTokens();
-			for(String token : strIter)
-			{
+			TokenStream eng = new EnglishTokenStream(doc.getContent());
+			//Iterable<String> strIter = eng.getTokens();
+			for(String token : eng.getTokens()){
 				docIndex.addTerm(processor.processToken(token), doc.getId());
 			}
 		}
