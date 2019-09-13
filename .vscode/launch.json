@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - TermDocumentIndexerMain",
+            "request": "launch",
+            "mainClass": "edu.csulb.TermDocumentIndexerMain",
+            "projectName": "src"
+        }
+    ]
+}
