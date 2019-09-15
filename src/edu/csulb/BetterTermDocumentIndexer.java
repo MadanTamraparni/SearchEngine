@@ -17,6 +17,7 @@ import com.google.gson.JsonSyntaxException;
 import cecs429.documents.Document;
 import cecs429.documents.DocumentCorpus;
 import cecs429.index.Index;
+import cecs429.index.PositionalInvertedIndex;
 import cecs429.index.TermDocumentIndex;
 import cecs429.text.BasicTokenProcessor;
 import cecs429.text.EnglishTokenStream;
@@ -42,7 +43,7 @@ public class BetterTermDocumentIndexer {
 	}
 	
 	private static Index indexCorpus(DocumentCorpus corpus) {
-		HashSet<String> vocabulary = new HashSet<>();
+		//HashSet<String> vocabulary = new HashSet<>();
 		BasicTokenProcessor processor = new BasicTokenProcessor();
 		
 		// First, build the vocabulary hash set.
@@ -55,13 +56,16 @@ public class BetterTermDocumentIndexer {
 		//		and adding them to the HashSet vocabulary.
 		
 		Iterable<Document> it = corpus.getDocuments();
-		
+		PositionalInvertedIndex index = new PositionalInvertedIndex();
 		for(Document doc : it) {
 			EnglishTokenStream eng = new EnglishTokenStream(doc.getContent());
 			Iterable<String> strIter = eng.getTokens();
+			int currentPosition = -1;
+			int docId = doc.getId();
 			for(String token : strIter)
 			{
-				vocabulary.add(processor.processToken(token));
+				currentPosition++;
+				index.addTerm(processor.processToken(token), docId, currentPosition);
 			}
 		}
 		
@@ -69,26 +73,7 @@ public class BetterTermDocumentIndexer {
 		// Constuct a TermDocumentMatrix once you know the size of the vocabulary.
 		// THEN, do the loop again! But instead of inserting into the HashSet, add terms to the index with addPosting.
 		
-		TermDocumentIndex docIndex = new TermDocumentIndex(vocabulary,corpus.getCorpusSize());
-		
-		Iterable<Document> iter = corpus.getDocuments();
-		
-		for(Document doc : iter) {
-			EnglishTokenStream eng = new EnglishTokenStream(doc.getContent());
-			Iterable<String> strIter = eng.getTokens();
-			for(String token : strIter)
-			{
-				docIndex.addTerm(processor.processToken(token), doc.getId());
-			}
-			try {
-				eng.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-		return docIndex;
+		return index;
 	}
 	
 	public static void parseJSON()
