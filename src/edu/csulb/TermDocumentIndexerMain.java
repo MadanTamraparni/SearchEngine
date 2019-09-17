@@ -11,7 +11,7 @@ import cecs429.documents.DirectoryCorpus;
 import cecs429.documents.Document;
 import cecs429.documents.DocumentCorpus;
 import cecs429.index.Index;
-import cecs429.index.InvertedIndex;
+import cecs429.index.PositionalInvertedIndex;
 import cecs429.index.Posting;
 import cecs429.index.TermDocumentIndex;
 import cecs429.text.BasicTokenProcessor;
@@ -66,17 +66,25 @@ public class TermDocumentIndexerMain {
 		// Iterate through the tokens in the document, processing them using a BasicTokenProcessor,
 		//		and adding them to the HashSet vocabulary.
 		
-		InvertedIndex docIndex = new InvertedIndex();
+		PositionalInvertedIndex index = new PositionalInvertedIndex();
 		Iterable<Document> it = corpus.getDocuments();
 		
 		for(Document doc : it) {
-			TokenStream eng = new EnglishTokenStream(doc.getContent());
-			//Iterable<String> strIter = eng.getTokens();
-			for(String token : eng.getTokens()){
-				docIndex.addTerm(processor.processToken(token), doc.getId());
+			EnglishTokenStream eng = new EnglishTokenStream(doc.getContent());
+			Iterable<String> strIter = eng.getTokens();
+			int currentPosition = -1;
+			int docId = doc.getId();
+			for(String token : strIter)
+			{
+				List<String> tokenList = processor.enhancedProcessToken(token);
+				for(String newToken:tokenList)
+				{
+					currentPosition++;
+					index.addTerm(newToken, docId, currentPosition);
+				}
 			}
 		}
 		
-		return docIndex;
+		return index;
 	}
 }
