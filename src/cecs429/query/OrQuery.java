@@ -19,11 +19,26 @@ public class OrQuery implements QueryComponent {
 	
 	@Override
 	public List<Posting> getPostings(Index index) {
-		List<Posting> result = null;
+		
 		
 		// TODO: program the merge for an OrQuery, by gathering the postings of the composed QueryComponents and
 		// unioning the resulting postings.
 		
+		TermLiteral firstLiteral = (TermLiteral) mComponents.get(0);
+		List<Posting> result = index.getPostings(firstLiteral.getTerm());
+		
+		for(int i=1; i < mComponents.size(); i++)
+		{
+			
+			TermLiteral secondLiteral = (TermLiteral) mComponents.get(i);	
+			List<Posting> nextPosting = index.getPostings(firstLiteral.getTerm());
+			
+			for(Posting p : nextPosting)
+			{
+				if(!result.contains(p))
+					result.add(p);
+			}			
+ 		}
 		return result;
 	}
 	

@@ -4,6 +4,5 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="lib/gson-2.8.5.jar"/>
 	<classpathentry kind="lib" path="F:/Study/Fall/CECS529/Project/SearchEngine/lib/gson-2.8.5.jar"/>
-	<classpathentry kind="lib" path="F:/porter2Stemmer.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

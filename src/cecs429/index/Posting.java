@@ -25,4 +25,10 @@ public class Posting {
 	public List<Integer> getPositions(){
 		return mPositions;
 	}
+	
+	@Override
+	public boolean equals(Object p)
+	{
+		return (this.mDocumentId == ((Posting)p).mDocumentId);
+	}
 }
