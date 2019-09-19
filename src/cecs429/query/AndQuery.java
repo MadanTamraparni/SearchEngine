@@ -22,14 +22,14 @@ public class AndQuery implements QueryComponent {
 		
 		// TODO: program the merge for an AndQuery, by gathering the postings of the composed QueryComponents and
 		// intersecting the resulting postings.
-		TermLiteral firstLiteral = (TermLiteral) mComponents.get(0);
-		List<Posting> result = index.getPostings(firstLiteral.getTerm());
+	
+		QueryComponent firstQueryComp = mComponents.get(0);
+		List<Posting> result = firstQueryComp.getPostings(index);
+		System.out.println("Size = " + result.size());
 		for(int j=1; j < mComponents.size(); j++)
 		{
-			
-			TermLiteral secondLiteral = (TermLiteral) mComponents.get(j);	
-			List<Posting> nextPosting = index.getPostings(firstLiteral.getTerm());
-			
+				
+			List<Posting> nextPosting = mComponents.get(j).getPostings(index);			
 			for(Posting p : result)
 			{
 				if(!nextPosting.contains(p.getDocumentId()))
@@ -37,7 +37,6 @@ public class AndQuery implements QueryComponent {
 					result.remove(p);
 				}
 			}
-			
  		}
 		return result;
 	}

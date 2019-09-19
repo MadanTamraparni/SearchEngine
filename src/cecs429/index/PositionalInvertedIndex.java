@@ -20,7 +20,7 @@ public class PositionalInvertedIndex implements Index {
 	
 	@Override
 	public List<Posting> getPostings(String term) {
-		System.out.println("Term = " + term);
+		//System.out.println("Term = " + term);
 		List<Posting> postings = new LinkedList<Posting>();
 		
 		if(mPostingMap.containsKey(term))

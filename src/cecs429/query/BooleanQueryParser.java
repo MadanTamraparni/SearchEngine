@@ -3,6 +3,9 @@ package cecs429.query;
 import java.util.ArrayList;
 import java.util.List;
 
+import cecs429.text.BasicTokenProcessor;
+import cecs429.text.TokenProcessor;
+
 /**
  * Parses boolean queries according to the base requirements of the CECS 429 project.
  * Does not handle phrase queries, NOT queries, NEAR queries, or wildcard queries... yet.
@@ -50,8 +53,12 @@ public class BooleanQueryParser {
 		do {
 			// Identify the next subquery: a portion of the query up to the next + sign.
 			StringBounds nextSubquery = findNextSubquery(query, start);
+			
 			// Extract the identified subquery into its own string.
 			String subquery = query.substring(nextSubquery.start, nextSubquery.start + nextSubquery.length);
+			System.out.println("Sub Query = " + subquery);
+			//TokenProcessor processor = new BasicTokenProcessor();
+			//subquery = processor.processToken(subquery);
 			int subStart = 0;
 			
 			// Store all the individual components of this subquery.
@@ -153,13 +160,8 @@ public class BooleanQueryParser {
 		{
 			++startIndex;
 			int closePhrase = subquery.indexOf('"',startIndex);
-			if (closePhrase < 0) {
-				// No more literals in this subquery.
-				lengthOut = subLength - startIndex;
-			}
-			else {
-				lengthOut = closePhrase - startIndex;
-			}
+			lengthOut = closePhrase - startIndex; // Assuming that there is close phrase
+			
 			return new Literal(new StringBounds(startIndex, lengthOut), 
 					new PhraseLiteral(subquery.substring(startIndex, startIndex + lengthOut)));
 		}

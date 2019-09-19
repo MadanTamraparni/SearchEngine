@@ -14,11 +14,19 @@ import cecs429.index.Index;
 import cecs429.index.PositionalInvertedIndex;
 import cecs429.index.Posting;
 import cecs429.index.TermDocumentIndex;
+import cecs429.query.BooleanQueryParser;
+import cecs429.query.QueryComponent;
 import cecs429.text.BasicTokenProcessor;
 import cecs429.text.EnglishTokenStream;
+import cecs429.text.PorterStemmer;
 import cecs429.text.TokenStream;
 
 public class TermDocumentIndexerMain {
+	public static final String STEM_STR = "stem";
+	public static final String QUIT_STR = "q";
+	public static final String INDEX_STR = "index";
+	public static final String VOCAB_STR = "vocab";
+	
 	public static void main(String[] args)
 	{
 		//DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(Paths.get("").toAbsolutePath(), ".txt");
@@ -37,18 +45,43 @@ public class TermDocumentIndexerMain {
 
         DocumentCorpus corpus = DirectoryCorpus.loadJsonDirectory(new File(path).toPath(),".json");
         Index index = indexCorpus(corpus) ;
-        // We aren't ready to use a full query parser; for now, we'll only support single-term queries.
+        
+        BooleanQueryParser queryParser = new BooleanQueryParser();
         String query = "";
         while(true){
-            System.out.print("Enter search term: ");
+            System.out.print("Enter search query: ");
             query = in.nextLine();
-            if(query.equals("q")) break;
-            for (Posting p : index.getPostings(query)) {
+            if(query.equals(QUIT_STR))
+            {
+            	System.out.println("q entry for quit.");
+            	break;
+            }
+            else if(query.contains(STEM_STR))
+            {
+            	query = query.substring(STEM_STR.length()+1);
+            	PorterStemmer stemmer = new PorterStemmer();
+            	System.out.println("Stemmer Token = " + stemmer.GetStemmedToken(query));
+            }
+            else if(query.contains(INDEX_STR))
+            {
+            	
+            }
+            else if(query.contains(VOCAB_STR))
+            {
+            	List<String> vocabList = index.getVocabulary();
+            	for(int i =0; i < 1000; i++)
+            		System.out.println(vocabList.get(i));
+            	System.out.println("Size of the Vocabulary = " + vocabList.size());
+            	break;
+            }
+            QueryComponent queryComponent = queryParser.parseQuery(query);
+            System.out.println("Size = " + queryComponent.getPostings(index).size());
+            for (Posting p : queryComponent.getPostings(index)) {
 				System.out.println("Document ID " + p.getDocumentId());
 				// Below print line only for tracing the index
 				//System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
             }
-            System.out.println("q entry for quit.");
+            
         }
         in.close();
 	}
@@ -84,7 +117,6 @@ public class TermDocumentIndexerMain {
 				}
 			}
 		}
-		
 		return index;
 	}
 }

@@ -45,7 +45,7 @@ public class PhraseLiteral implements QueryComponent {
 			{
 				Posting first = (Posting) firstIterator.next();
 				Posting compare = (Posting) compIterator.next();
-				List<Integer> firstPositions = compare.getPositions();
+				List<Integer> firstPositions = first.getPositions();
 				List<Integer> compPositions = compare.getPositions();
 				int len = Math.min(firstPositions.size(), compPositions.size());
 				for(int i = 0, j=0; i < len && j < len; i++, j++)
