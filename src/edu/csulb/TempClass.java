@@ -7,7 +7,7 @@ public class TempClass {
 	{
 		BasicTokenProcessor proc = new BasicTokenProcessor();
 		
-		for(String s: proc.enhancedProcessToken("#$@swimmer!@&&"))
+		for(String s: proc.enhancedProcessToken("192.168.1"))
 		{
 			System.out.println(s);
 		}
