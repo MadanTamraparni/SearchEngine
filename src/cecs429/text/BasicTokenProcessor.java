@@ -36,14 +36,18 @@ public class BasicTokenProcessor implements TokenProcessor {
 			StringTokenizer tokenizer = new StringTokenizer(token,"-");
 			while(tokenizer.hasMoreTokens())
 			{
-				//System.out.println(m_Stemmer.GetStemmedToken(tokenizer.nextToken()));
+				System.out.println(m_Stemmer.GetStemmedToken(tokenizer.nextToken()));
 				listHyphenToken.add(m_Stemmer.GetStemmedToken(tokenizer.nextToken()));
 			}
 		}
 		else
 		{
-			//System.out.println("Stemmed  = " + m_Stemmer.GetStemmedToken(token));
-			listHyphenToken.add(m_Stemmer.GetStemmedToken(token));
+			char[] chArray = token.toCharArray();
+			if(Character.isDigit(chArray[0]))
+				listHyphenToken.add(token);
+			else	
+				listHyphenToken.add(m_Stemmer.GetStemmedToken(token));
+			
 		}
 		return listHyphenToken;
 	}
@@ -56,18 +60,15 @@ public class BasicTokenProcessor implements TokenProcessor {
 			if(Character.isAlphabetic(chArray[i]) || Character.isDigit(chArray[i]))
 			{
 				token =  token.substring(i);
-				//System.out.println("Pre = " + token);
 				break;
 			}
 		}
 		chArray = token.toCharArray();
 		for(int j = chArray.length-1;j>0;j--)
 		{
-			//System.out.println(chArray[j]);
 			if(Character.isAlphabetic(chArray[j]) || Character.isDigit(chArray[j]))
 			{
-				token =  token.substring(0, j+1);
-				//System.out.println("Post = " + token);
+				token =  token.substring(0, j+1);			
 				break;
 			}
 		}
