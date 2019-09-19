@@ -22,6 +22,7 @@ import cecs429.text.PorterStemmer;
 import cecs429.text.TokenStream;
 
 public class TermDocumentIndexerMain {
+
 	public static final String STEM_STR = "stem";
 	public static final String QUIT_STR = "q";
 	public static final String INDEX_STR = "index";
@@ -42,11 +43,17 @@ public class TermDocumentIndexerMain {
 			}
             System.out.print("Directory does not exist. ");
         }
-
+		long timeStart = System.currentTimeMillis();
         DocumentCorpus corpus = DirectoryCorpus.loadJsonDirectory(new File(path).toPath(),".json");
+
         Index index = indexCorpus(corpus) ;
         
         BooleanQueryParser queryParser = new BooleanQueryParser();
+
+		long timeEnd = System.currentTimeMillis();
+		timeConvert(timeEnd - timeStart);
+        // We aren't ready to use a full query parser; for now, we'll only support single-term queries.
+
         String query = "";
         while(true){
             System.out.print("Enter search query: ");
@@ -84,6 +91,11 @@ public class TermDocumentIndexerMain {
             
         }
         in.close();
+	}
+
+	private static void timeConvert(long time){
+		double seconds = time / 1000.0;
+		System.out.println(seconds/60.0 + "minutes " + seconds%60 + "seconds.");
 	}
 	
 	private static Index indexCorpus(DocumentCorpus corpus) {
