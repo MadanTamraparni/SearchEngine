@@ -20,8 +20,10 @@ public class BasicTokenProcessor implements TokenProcessor {
 	@Override
 	public List<String> enhancedProcessToken(String token) {
 		// TODO Auto-generated method stub
-		token = token.replaceAll("[^A-Za-z]", "");
+		token = getAplhaNumericToken(token);
+		System.out.println(token);
 		token = token.replaceAll("\\W", "").toLowerCase();
+		System.out.println(token);
 		List<String> tokenList = processHypenToken(token);
 		return tokenList;
 	}
@@ -34,13 +36,42 @@ public class BasicTokenProcessor implements TokenProcessor {
 			StringTokenizer tokenizer = new StringTokenizer(token,"-");
 			while(tokenizer.hasMoreTokens())
 			{
+				//System.out.println(m_Stemmer.GetStemmedToken(tokenizer.nextToken()));
 				listHyphenToken.add(m_Stemmer.GetStemmedToken(tokenizer.nextToken()));
 			}
 		}
 		else
+		{
+			//System.out.println("Stemmed  = " + m_Stemmer.GetStemmedToken(token));
 			listHyphenToken.add(m_Stemmer.GetStemmedToken(token));
-		
+		}
 		return listHyphenToken;
+	}
+	
+	private String getAplhaNumericToken(String token)
+	{
+		char[] chArray = token.toCharArray();
+		for(int i=0; i < chArray.length; i++)
+		{
+			if(Character.isAlphabetic(chArray[i]) || Character.isDigit(chArray[i]))
+			{
+				token =  token.substring(i);
+				//System.out.println("Pre = " + token);
+				break;
+			}
+		}
+		chArray = token.toCharArray();
+		for(int j = chArray.length-1;j>0;j--)
+		{
+			//System.out.println(chArray[j]);
+			if(Character.isAlphabetic(chArray[j]) || Character.isDigit(chArray[j]))
+			{
+				token =  token.substring(0, j+1);
+				//System.out.println("Post = " + token);
+				break;
+			}
+		}
+		return token;
 	}
 		
 }
