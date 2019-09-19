@@ -46,6 +46,9 @@ public class NearLiteral implements QueryComponent {
         return Union;
     }
 
+    //============================Testing Code only=========================
+    // this print function for purpose of checking
+    // Delete in future
     private void PrintPosting(List<Posting> postingList){
         System.out.println("[");
         for(Posting i : postingList){
@@ -55,7 +58,7 @@ public class NearLiteral implements QueryComponent {
         }
         System.out.println("]");
     }
-    
+    // ===========================End testing==============================
     private static boolean nearPosition(List<Integer> termPosition1, List<Integer> termPosition2, int k){
         int lo1 = 0, lo2 = 0, hi1 = termPosition1.size(), hi2 = termPosition2.size();
         while(lo1 < hi1 && lo2 < hi2){

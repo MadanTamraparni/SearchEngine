@@ -84,7 +84,6 @@ public class TermDocumentIndexerMain {
             	break;
 			}
 			else if(query.charAt(0) == NEAR_STR){
-				System.out.println("hittting near");
 				String[] subString = query.split(" ");
 				NearLiteral near = new NearLiteral(subString[0].substring(1, subString[0].length()), 
 				subString[1].charAt(subString[1].length() - 1),
@@ -135,15 +134,19 @@ public class TermDocumentIndexerMain {
 			int docId = doc.getId();
 			for(String token : strIter)
 			{
-				// System.out.println(token);
-				// List<String> tokenList = processor.enhancedProcessToken(token);
-				// for(String newToken:tokenList)
-				// {
-				// 	currentPosition++;
-				// 	index.addTerm(newToken, docId, currentPosition);
-				// }
-				currentPosition++;
-				index.addTerm(processor.processToken(token), docId, currentPosition);
+				List<String> tokenList = processor.enhancedProcessToken(token);
+				for(String newToken:tokenList)
+				{
+					currentPosition++;
+					index.addTerm(newToken, docId, currentPosition);
+				}
+
+				// ==============================Testing section===========================
+				// Below is old code that not using our enhancedProcessToken
+				// it serve purpose of testing Near operation
+				// currentPosition++;
+				// index.addTerm(processor.processToken(token), docId, currentPosition);
+				// ============================= End testing===============================
 			}
 		}
 		return index;
