@@ -19,6 +19,7 @@ import cecs429.text.EnglishTokenStream;
 import cecs429.text.TokenStream;
 
 public class TermDocumentIndexerMain {
+	
 	public static void main(String[] args)
 	{
 		//DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(Paths.get("").toAbsolutePath(), ".txt");
@@ -34,9 +35,11 @@ public class TermDocumentIndexerMain {
 			}
             System.out.print("Directory does not exist. ");
         }
-
+		long timeStart = System.currentTimeMillis();
         DocumentCorpus corpus = DirectoryCorpus.loadJsonDirectory(new File(path).toPath(),".json");
-        Index index = indexCorpus(corpus) ;
+		Index index = indexCorpus(corpus);
+		long timeEnd = System.currentTimeMillis();
+		timeConvert(timeEnd - timeStart);
         // We aren't ready to use a full query parser; for now, we'll only support single-term queries.
         String query = "";
         while(true){
@@ -51,6 +54,11 @@ public class TermDocumentIndexerMain {
             System.out.println("q entry for quit.");
         }
         in.close();
+	}
+
+	private static void timeConvert(long time){
+		double seconds = time / 1000.0;
+		System.out.println(seconds/60.0 + "minutes " + seconds%60 + "seconds.");
 	}
 	
 	private static Index indexCorpus(DocumentCorpus corpus) {
