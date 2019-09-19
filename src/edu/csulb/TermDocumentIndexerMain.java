@@ -20,6 +20,7 @@ import cecs429.text.BasicTokenProcessor;
 import cecs429.text.EnglishTokenStream;
 import cecs429.text.PorterStemmer;
 import cecs429.text.TokenStream;
+import cecs429.query.NearLiteral;
 
 public class TermDocumentIndexerMain {
 
@@ -27,6 +28,7 @@ public class TermDocumentIndexerMain {
 	public static final String QUIT_STR = "q";
 	public static final String INDEX_STR = "index";
 	public static final String VOCAB_STR = "vocab";
+	public static final char NEAR_STR = '[';
 	
 	public static void main(String[] args)
 	{
@@ -80,14 +82,26 @@ public class TermDocumentIndexerMain {
             		System.out.println(vocabList.get(i));
             	System.out.println("Size of the Vocabulary = " + vocabList.size());
             	break;
-            }
-            QueryComponent queryComponent = queryParser.parseQuery(query);
-            System.out.println("Size = " + queryComponent.getPostings(index).size());
-            for (Posting p : queryComponent.getPostings(index)) {
-				System.out.println("Document ID " + p.getDocumentId());
-				// Below print line only for tracing the index
-				//System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
-            }
+			}
+			else if(query.charAt(0) == NEAR_STR){
+				System.out.println("hittting near");
+				String[] subString = query.split(" ");
+				NearLiteral near = new NearLiteral(subString[0].substring(1, subString[0].length()), 
+				subString[1].charAt(subString[1].length() - 1),
+				subString[2].substring(0, subString[2].length()- 1));
+				for (Posting p : near.getPostings(index)) {
+					System.out.println("Document ID " + p.getDocumentId());
+					// Below print line only for tracing the index
+					System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
+				}
+			}
+            // QueryComponent queryComponent = queryParser.parseQuery(query);
+            // System.out.println("Size = " + queryComponent.getPostings(index).size());
+            // for (Posting p : queryComponent.getPostings(index)) {
+			// 	System.out.println("Document ID " + p.getDocumentId());
+			// 	// Below print line only for tracing the index
+			// 	//System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
+            // }
             
         }
         in.close();
@@ -121,12 +135,15 @@ public class TermDocumentIndexerMain {
 			int docId = doc.getId();
 			for(String token : strIter)
 			{
-				List<String> tokenList = processor.enhancedProcessToken(token);
-				for(String newToken:tokenList)
-				{
-					currentPosition++;
-					index.addTerm(newToken, docId, currentPosition);
-				}
+				// System.out.println(token);
+				// List<String> tokenList = processor.enhancedProcessToken(token);
+				// for(String newToken:tokenList)
+				// {
+				// 	currentPosition++;
+				// 	index.addTerm(newToken, docId, currentPosition);
+				// }
+				currentPosition++;
+				index.addTerm(processor.processToken(token), docId, currentPosition);
 			}
 		}
 		return index;
