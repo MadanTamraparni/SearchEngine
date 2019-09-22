@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="src" path=""/>
-	<classpathentry kind="output" path=""/>
-	<classpathentry kind="lib" path="/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Documentations/CECS_429/Homework3/lib/gson-2.8.5.jar"/>
-	
+	<classpathentry kind="con"
+		path="org.eclipse.jdt.launching.JRE_CONTAINER" />
+	<classpathentry kind="src" path="" />
+	<classpathentry kind="output" path="" />
+	<classpathentry kind="lib"
+		path="/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Documentations/CECS_429/Homework3/lib/gson-2.8.5.jar" />
+
 </classpath>

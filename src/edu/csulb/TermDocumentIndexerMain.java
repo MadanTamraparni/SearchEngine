@@ -104,7 +104,7 @@ public class TermDocumentIndexerMain {
 				//System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
             }
 
-			}
+			
            
         }
         in.close();
