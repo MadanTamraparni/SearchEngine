@@ -81,10 +81,12 @@ public class TermDocumentIndexerMain {
             	System.out.println("Size of the Vocabulary = " + vocabList.size());
             	break;
             }
+            if(query.length() == 0)
+            	continue;
             QueryComponent queryComponent = queryParser.parseQuery(query);
             System.out.println("Size = " + queryComponent.getPostings(index).size());
             for (Posting p : queryComponent.getPostings(index)) {
-				System.out.println("Document ID " + p.getDocumentId());
+				System.out.println("Document ID \"article" + p.getDocumentId()+1 + ".json\"");
 				// Below print line only for tracing the index
 				//System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
             }

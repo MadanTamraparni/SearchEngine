@@ -1,9 +1,11 @@
 package cecs429.query;
 
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
 import cecs429.text.BasicTokenProcessor;
+import cecs429.text.EnglishTokenStream;
 import cecs429.text.TokenProcessor;
 
 /**
@@ -50,15 +52,31 @@ public class BooleanQueryParser {
 		// AND subqueries.
 		
 		List<QueryComponent> allSubqueries = new ArrayList<>();
-		do {
+		EnglishTokenStream eng = new EnglishTokenStream(new StringReader(query));
+		Iterable<String> strIter = eng.getTokens();
+		StringBuilder strBuilder = new StringBuilder();
+		for(String token : strIter)
+		{
+			TokenProcessor processor = new BasicTokenProcessor();
+			List<String> subQueryList = processor.enhancedProcessToken(token);
+		
+			for(String s : subQueryList)
+			{
+				strBuilder.append(s);
+				strBuilder.append(" ");
+			}
+		}
+		query = strBuilder.toString();
+		query = query.substring(0,query.length() - 1);
+		
+		do 
+		{
 			// Identify the next subquery: a portion of the query up to the next + sign.
 			StringBounds nextSubquery = findNextSubquery(query, start);
-			
+			//System.out.println("Sub = " + nextSubquery);
 			// Extract the identified subquery into its own string.
 			String subquery = query.substring(nextSubquery.start, nextSubquery.start + nextSubquery.length);
-			System.out.println("Sub Query = " + subquery);
-			//TokenProcessor processor = new BasicTokenProcessor();
-			//subquery = processor.processToken(subquery);
+
 			int subStart = 0;
 			
 			// Store all the individual components of this subquery.
@@ -155,7 +173,7 @@ public class BooleanQueryParser {
 			++startIndex;
 		}
 		
-		//Code to check for phrase queries, if not present, default code should be executeds
+		//Code to check for phrase queries, if not present, default code should be executed
 		if(subquery.charAt(startIndex) == '"')
 		{
 			++startIndex;

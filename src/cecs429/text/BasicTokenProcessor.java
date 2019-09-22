@@ -21,9 +21,7 @@ public class BasicTokenProcessor implements TokenProcessor {
 	public List<String> enhancedProcessToken(String token) {
 		// TODO Auto-generated method stub
 		token = getAplhaNumericToken(token);
-		System.out.println(token);
-		token = token.replaceAll("\\W", "").toLowerCase();
-		System.out.println(token);
+		token = token.toLowerCase();
 		List<String> tokenList = processHypenToken(token);
 		return tokenList;
 	}
@@ -34,45 +32,56 @@ public class BasicTokenProcessor implements TokenProcessor {
 		if(token.contains(STR_HYPHEN))
 		{
 			StringTokenizer tokenizer = new StringTokenizer(token,"-");
+			StringBuilder finalString = new StringBuilder();
 			while(tokenizer.hasMoreTokens())
 			{
-				System.out.println(m_Stemmer.GetStemmedToken(tokenizer.nextToken()));
-				listHyphenToken.add(m_Stemmer.GetStemmedToken(tokenizer.nextToken()));
+				String temp = tokenizer.nextToken();
+				finalString.append(temp);
+				listHyphenToken.add(m_Stemmer.GetStemmedToken(temp));
 			}
+			listHyphenToken.add(finalString.toString());
 		}
 		else
 		{
-			char[] chArray = token.toCharArray();
-			if(Character.isDigit(chArray[0]))
-				listHyphenToken.add(token);
-			else	
-				listHyphenToken.add(m_Stemmer.GetStemmedToken(token));
-			
+			listHyphenToken.add(m_Stemmer.GetStemmedToken(token));
 		}
 		return listHyphenToken;
 	}
 	
 	private String getAplhaNumericToken(String token)
 	{
+		if(token.length() == 0 || token.length() == 1)
+			return token;
 		char[] chArray = token.toCharArray();
-		for(int i=0; i < chArray.length; i++)
+		int startIndex = 0;
+		int endIndex = chArray.length-1;
+		boolean startIndexFound = false, endIndexFound = false;
+		while(true)
 		{
-			if(Character.isAlphabetic(chArray[i]) || Character.isDigit(chArray[i]))
+			if(Character.isAlphabetic(chArray[startIndex]) || Character.isDigit(chArray[startIndex]))
 			{
-				token =  token.substring(i);
-				break;
+				if(startIndexFound == false)
+				{	
+					startIndexFound = true;
+				}
 			}
-		}
-		chArray = token.toCharArray();
-		for(int j = chArray.length-1;j>0;j--)
-		{
-			if(Character.isAlphabetic(chArray[j]) || Character.isDigit(chArray[j]))
+			else
+				startIndex++;
+			
+			if(Character.isAlphabetic(chArray[endIndex]) || Character.isDigit(chArray[endIndex]))
 			{
-				token =  token.substring(0, j+1);			
-				break;
+				if(endIndexFound == false)
+				{	
+					endIndexFound = true;
+				}
 			}
+			else
+				endIndex--;
+			if(startIndexFound && endIndexFound)
+				break;
+			
 		}
-		return token;
+		return token.substring(startIndex, endIndex+1);
 	}
 		
 }
