@@ -31,7 +31,7 @@ public class AndQuery implements QueryComponent {
 			List<Posting> temp = new ArrayList<Posting>(); 
 			int len = Math.min(firstList.size(), secondList.size());
 			int x=0, y=0;
-			while(x<len && y<len)
+			while(x<len || y<len)
 			{
 				Posting firstPosting = firstList.get(x);
 				Posting secondPosting = secondList.get(y);

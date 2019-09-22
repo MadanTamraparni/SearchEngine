@@ -37,17 +37,17 @@ public class OrQuery implements QueryComponent {
 				Posting secondPosting = secondList.get(y);
 				if(firstPosting.getDocumentId() > secondPosting.getDocumentId())
 				{
-					temp.add(firstPosting);	
-					x++;
-					if(firstPosting.getDocumentId() == secondPosting.getDocumentId())
-						y++;
-				}
-				else
-				{
-					temp.add(secondPosting);
+					temp.add(secondPosting);	
 					y++;
 					if(firstPosting.getDocumentId() == secondPosting.getDocumentId())
 						x++;
+				}
+				else
+				{
+					temp.add(firstPosting);
+					x++;
+					if(firstPosting.getDocumentId() == secondPosting.getDocumentId())
+						y++;
 				}
 			}
 			if(x == len)
