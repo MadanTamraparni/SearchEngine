@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CodeLens (Launch) - TempClass",
+            "request": "launch",
+            "mainClass": "edu.csulb.TempClass",
+            "projectName": "src"
+        },
+        {
+            "type": "java",
             "name": "CodeLens (Launch) - TermDocumentIndexerMain",
             "request": "launch",
             "mainClass": "edu.csulb.TermDocumentIndexerMain",
