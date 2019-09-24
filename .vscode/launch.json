@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CodeLens (Launch) - MasterWindow",
+            "request": "launch",
+            "mainClass": "gui.MasterWindow",
+            "projectName": "src",
+        },
+        {
+            "type": "java",
             "name": "CodeLens (Launch) - TempClass",
             "request": "launch",
             "mainClass": "edu.csulb.TempClass",
@@ -14,5 +21,5 @@
             "mainClass": "edu.csulb.TermDocumentIndexerMain",
             "projectName": "src"
         }
-    ]
+    ],
 }
