@@ -3,6 +3,7 @@ package cecs429.query;
 import cecs429.index.Index;
 import cecs429.index.Posting;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,28 +19,57 @@ public class OrQuery implements QueryComponent {
 	}
 	
 	@Override
-	public List<Posting> getPostings(Index index) {
-		
-		
+	public List<Posting> getPostings(Index index) {		
 		// TODO: program the merge for an OrQuery, by gathering the postings of the composed QueryComponents and
 		// unioning the resulting postings.
 		
-		TermLiteral firstLiteral = (TermLiteral) mComponents.get(0);
-		List<Posting> result = index.getPostings(firstLiteral.getTerm());
-		
-		for(int i=1; i < mComponents.size(); i++)
+		QueryComponent firstQueryComp = mComponents.get(0);		
+		List<Posting> firstList = firstQueryComp.getPostings(index);
+		for(int j=1; j < mComponents.size(); j++)
 		{
-			
-			TermLiteral secondLiteral = (TermLiteral) mComponents.get(i);	
-			List<Posting> nextPosting = index.getPostings(firstLiteral.getTerm());
-			
-			for(Posting p : nextPosting)
+			List<Posting> secondList = mComponents.get(j).getPostings(index);
+			List<Posting> temp = new ArrayList<Posting>(); 
+			int len = Math.min(firstList.size(), secondList.size());
+			int x=0, y=0;
+			while(x<len && y<len)
 			{
-				if(!result.contains(p))
-					result.add(p);
-			}			
+				Posting firstPosting = firstList.get(x);
+				Posting secondPosting = secondList.get(y);
+				if(firstPosting.getDocumentId() > secondPosting.getDocumentId())
+				{
+					temp.add(secondPosting);	
+					y++;
+					if(firstPosting.getDocumentId() == secondPosting.getDocumentId())
+						x++;
+				}
+				else
+				{
+					temp.add(firstPosting);
+					x++;
+					if(firstPosting.getDocumentId() == secondPosting.getDocumentId())
+						y++;
+				}
+			}
+			if(x == len)
+			{
+				while(y < secondList.size()) {
+				
+					temp.add(secondList.get(y));
+					y++;
+				}
+					
+			}
+			else if(y == len)
+			{
+				while(x < firstList.size())
+				{
+					temp.add(firstList.get(x));
+					x++;
+				}
+			}
+			firstList = temp;
  		}
-		return result;
+		return firstList;
 	}
 	
 	@Override
