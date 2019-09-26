@@ -71,4 +71,12 @@ public class NearLiteral implements QueryComponent {
         return false;
     }
 
+
+
+	@Override
+	public boolean isNegative() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }
