@@ -78,7 +78,7 @@ public class BooleanQueryParser {
 			String subquery = query.substring(nextSubquery.start, nextSubquery.start + nextSubquery.length);
 
 			int subStart = 0;
-			
+			System.out.println(subquery);
 			// Store all the individual components of this subquery.
 			List<QueryComponent> subqueryLiterals = new ArrayList<>(0);
 
@@ -109,6 +109,7 @@ public class BooleanQueryParser {
 			}
 			start = nextSubquery.start + nextSubquery.length;
 		} while (start < query.length());
+
 		
 		// After processing all subqueries, we either have a single component or multiple components
 		// that must be combined with an OrQuery.
@@ -149,6 +150,7 @@ public class BooleanQueryParser {
 			// to the next + sign.
 		
 			// Move nextPlus backwards until finding a non-space non-plus character.
+			// Purpose: To remove all white space and plus. Give back the term
 			test = query.charAt(nextPlus);
 			while (test == ' ' || test == '+') {
 				test = query.charAt(--nextPlus);
@@ -182,6 +184,22 @@ public class BooleanQueryParser {
 			
 			return new Literal(new StringBounds(startIndex, lengthOut), 
 					new PhraseLiteral(subquery.substring(startIndex, startIndex + lengthOut)));
+		}
+		// else if(subquery.charAt(startIndex) == '('){
+
+		// }
+		else if(subquery.charAt(startIndex) == '['){
+			++startIndex;
+			int endNearLiteral = subquery.indexOf(']',startIndex);
+			lengthOut = endNearLiteral - startIndex;
+			// Might need fix on how long the token is
+			// Wating on Madan
+			String[] nearLiteral = subquery.substring(startIndex, startIndex + lengthOut).split(" ");
+
+			return new Literal(new StringBounds(startIndex, lengthOut),
+					new NearLiteral(nearLiteral[0], 
+									Character.getNumericValue(nearLiteral[1].charAt(nearLiteral[1].length() - 1) - '0'), 
+									nearLiteral[2]));
 		}
 		else
 		{
