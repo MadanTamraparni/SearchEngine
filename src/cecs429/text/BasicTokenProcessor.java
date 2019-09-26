@@ -20,6 +20,7 @@ public class BasicTokenProcessor implements TokenProcessor {
 	@Override
 	public List<String> enhancedProcessToken(String token) {
 		// TODO Auto-generated method stub
+		//System.out.println(token);
 		token = getAplhaNumericToken(token);
 		token = token.toLowerCase();
 		List<String> tokenList = processHypenToken(token);
@@ -52,6 +53,7 @@ public class BasicTokenProcessor implements TokenProcessor {
 	{
 		if(token.length() == 0 || token.length() == 1)
 			return token;
+		
 		char[] chArray = token.toCharArray();
 		int startIndex = 0;
 		int endIndex = chArray.length-1;
@@ -77,6 +79,9 @@ public class BasicTokenProcessor implements TokenProcessor {
 			}
 			else
 				endIndex--;
+			
+			if(startIndex >= endIndex)
+				return token;
 			if(startIndexFound && endIndexFound)
 				break;
 			
