@@ -62,8 +62,17 @@ public class BooleanQueryParser {
 		
 			for(String s : subQueryList)
 			{
-				strBuilder.append(s);
-				strBuilder.append(" ");
+				if(token.charAt(0) == '-')
+				{
+					strBuilder.append("-"+s);
+					strBuilder.append(" ");
+				}
+				else
+				{
+					strBuilder.append(s);
+					strBuilder.append(" ");
+				}
+					
 			}
 		}
 		query = strBuilder.toString();
@@ -87,7 +96,15 @@ public class BooleanQueryParser {
 				Literal lit = findNextLiteral(subquery, subStart);
 				
 				// Add the literal component to the conjunctive list.
-				subqueryLiterals.add(lit.literalComponent);
+				/**** Check if the literal component is negative(NOT)****/
+				QueryComponent literalComponent = lit.literalComponent;
+				
+				if(literalComponent.isNegative()){
+					subqueryLiterals.add(new NotQuery(literalComponent));
+				}else{
+					subqueryLiterals.add(literalComponent);
+				}
+				/*******************************************************/
 				
 				// Set the next index to start searching for a literal.
 				subStart = lit.bounds.start + lit.bounds.length;
@@ -169,11 +186,18 @@ public class BooleanQueryParser {
 	private Literal findNextLiteral(String subquery, int startIndex) {
 		int subLength = subquery.length();
 		int lengthOut;
-		
+		boolean isNegative = false;
 		// Skip past white space.
 		while (subquery.charAt(startIndex) == ' ') {
 			++startIndex;
 		}
+		
+		/**Check if the query starts with a negative sign***/
+		if(subquery.charAt(startIndex) == '-'){
+			isNegative = true;
+			startIndex += 1;
+		}
+		/***************************************************/
 		
 		//Code to check for phrase queries, if not present, default code should be executed
 		if(subquery.charAt(startIndex) == '"')
@@ -183,7 +207,7 @@ public class BooleanQueryParser {
 			lengthOut = closePhrase - startIndex; // Assuming that there is close phrase
 			
 			return new Literal(new StringBounds(startIndex, lengthOut), 
-					new PhraseLiteral(subquery.substring(startIndex, startIndex + lengthOut)));
+					new PhraseLiteral(subquery.substring(startIndex, startIndex + lengthOut), isNegative));
 		}
 		// else if(subquery.charAt(startIndex) == '('){
 
@@ -216,7 +240,7 @@ public class BooleanQueryParser {
 			// This is a term literal containing a single term.
 			return new Literal(
 			 new StringBounds(startIndex, lengthOut),
-			 new TermLiteral(subquery.substring(startIndex, startIndex + lengthOut)));
+			 new TermLiteral(subquery.substring(startIndex, startIndex + lengthOut), isNegative));
 		}
 		/*
 		TODO:

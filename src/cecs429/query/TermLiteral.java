@@ -10,9 +10,11 @@ import java.util.List;
  */
 public class TermLiteral implements QueryComponent {
 	private String mTerm;
+	private boolean mIsNegative;
 	
-	public TermLiteral(String term) {
+	public TermLiteral(String term, boolean isNegative) {
 		mTerm = term;
+		mIsNegative = isNegative;
 	}
 	
 	public String getTerm() {
@@ -27,5 +29,10 @@ public class TermLiteral implements QueryComponent {
 	@Override
 	public String toString() {
 		return mTerm;
+	}
+	
+	@Override
+	public boolean isNegative(){
+		return mIsNegative;
 	}
 }
