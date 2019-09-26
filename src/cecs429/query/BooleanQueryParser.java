@@ -182,8 +182,6 @@ public class BooleanQueryParser {
 	 * Locates and returns the next literal from the given subquery string.
 	 */
 	private Literal findNextLiteral(String subquery, int startIndex) {
-		System.out.println(subquery);
-		System.out.println(startIndex);
 		int subLength = subquery.length();
 		int lengthOut;
 		boolean isNegative = false;
