@@ -59,11 +59,21 @@ public class BooleanQueryParser {
 		{
 			TokenProcessor processor = new BasicTokenProcessor();
 			List<String> subQueryList = processor.enhancedProcessToken(token);
+			
 		
 			for(String s : subQueryList)
 			{
-				strBuilder.append(s);
-				strBuilder.append(" ");
+				if(token.charAt(0) == '-')
+				{
+					strBuilder.append("-"+s);
+					strBuilder.append(" ");
+				}
+				else
+				{
+					strBuilder.append(s);
+					strBuilder.append(" ");
+				}
+					
 			}
 		}
 		query = strBuilder.toString();
@@ -133,6 +143,7 @@ public class BooleanQueryParser {
 		// Find the start of the next subquery by skipping spaces and + signs.
 		char test = query.charAt(startIndex);
 		while (test == ' ' || test == '+') {
+			
 			test = query.charAt(++startIndex);
 		}
 		
@@ -183,6 +194,19 @@ public class BooleanQueryParser {
 			return new Literal(new StringBounds(startIndex, lengthOut), 
 					new PhraseLiteral(subquery.substring(startIndex, startIndex + lengthOut)));
 		}
+//		else if(subquery.charAt(startIndex) == '(')
+//		{
+//			++startIndex;
+//			int closeBrace = subquery.indexOf(')');
+//			lengthOut = closeBrace - startIndex; // Assuming the query is proper
+//			String term = subquery.substring(startIndex, startIndex + lengthOut);
+//			if(term.contains("+"))
+//			{
+//				
+//			}
+//			return new Literal(new StringBounds(startIndex, lengthOut), 
+//					new PhraseLiteral(subquery.substring(startIndex, startIndex + lengthOut)));
+//		}
 		else
 		{
 			// Locate the next space to find the end of this literal.

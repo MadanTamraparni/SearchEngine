@@ -32,6 +32,11 @@ public class BasicTokenProcessor implements TokenProcessor {
 		List<String> listHyphenToken = new ArrayList<String>(); 
 		if(token.contains(STR_HYPHEN))
 		{
+			if(token.charAt(0) == '-')
+			{
+				listHyphenToken.add(m_Stemmer.GetStemmedToken(token.substring(1)));
+				return listHyphenToken;
+			}
 			StringTokenizer tokenizer = new StringTokenizer(token,"-");
 			StringBuilder finalString = new StringBuilder();
 			while(tokenizer.hasMoreTokens())
