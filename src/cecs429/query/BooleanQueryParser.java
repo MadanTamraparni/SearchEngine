@@ -60,6 +60,7 @@ public class BooleanQueryParser {
 			TokenProcessor processor = new BasicTokenProcessor();
 			List<String> subQueryList = processor.enhancedProcessToken(token);
 		
+			//for(String i : subQueryList) System.out.print(i + " ");
 			for(String s : subQueryList)
 			{
 				if(token.charAt(0) == '-')
@@ -87,6 +88,7 @@ public class BooleanQueryParser {
 			String subquery = query.substring(nextSubquery.start, nextSubquery.start + nextSubquery.length);
 
 			int subStart = 0;
+			// this is subquery print. REMOVE AFTER TESTING
 			System.out.println(subquery);
 			// Store all the individual components of this subquery.
 			List<QueryComponent> subqueryLiterals = new ArrayList<>(0);

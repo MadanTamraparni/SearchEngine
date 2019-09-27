@@ -1,6 +1,7 @@
 package cecs429.text;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -24,6 +25,15 @@ public class BasicTokenProcessor implements TokenProcessor {
 		token = getAplhaNumericToken(token);
 		token = token.toLowerCase();
 		List<String> tokenList = processHypenToken(token);
+
+		for(int i = 0; i < tokenList.size(); i++){
+			int length = tokenList.get(i).length();
+			if(length == 0) continue;
+			char temp = tokenList.get(i).charAt(length - 1);
+			if(temp == ']' || temp == ')'){
+				tokenList.set(i, m_Stemmer.GetStemmedToken(tokenList.get(i).substring(0,length - 1)) + temp);
+			}
+		}
 		return tokenList;
 	}
 	
@@ -56,6 +66,8 @@ public class BasicTokenProcessor implements TokenProcessor {
 	
 	private String getAplhaNumericToken(String token)
 	{
+		ArrayList<Character> specialChars = new ArrayList<>(Arrays.asList('[',']','(',')','"'));
+		//char[] specialCharacters = new char[]{'[',']','(',')','"',};
 		if(token.length() == 0 || token.length() == 1)
 			return token;
 		
@@ -65,7 +77,9 @@ public class BasicTokenProcessor implements TokenProcessor {
 		boolean startIndexFound = false, endIndexFound = false;
 		while(true)
 		{
-			if(Character.isAlphabetic(chArray[startIndex]) || Character.isDigit(chArray[startIndex]))
+			if(Character.isAlphabetic(chArray[startIndex]) 
+				|| Character.isDigit(chArray[startIndex]) 
+				|| specialChars.contains(chArray[startIndex]))
 			{
 				if(startIndexFound == false)
 				{	
@@ -75,7 +89,9 @@ public class BasicTokenProcessor implements TokenProcessor {
 			else
 				startIndex++;
 			
-			if(Character.isAlphabetic(chArray[endIndex]) || Character.isDigit(chArray[endIndex]))
+			if(Character.isAlphabetic(chArray[endIndex]) 
+				|| Character.isDigit(chArray[endIndex]) 
+				|| specialChars.contains(chArray[endIndex]))
 			{
 				if(endIndexFound == false)
 				{	
