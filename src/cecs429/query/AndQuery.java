@@ -30,16 +30,27 @@ public class AndQuery implements QueryComponent {
 		QueryComponent firstQueryComp = mComponents.get(0);
 		QueryComponent secondQueryComp = mComponents.get(1);
 		
-		//Get the AND or NOT AND result of the first and the second QueryComponents
+		//Get the postings of the first and second QueryComponents
+		List<Posting> firstQueryPostings = firstQueryComp.getPostings(index);
+		List<Posting> secondQueryPostings = secondQueryComp.getPostings(index);
+		
+		//Check if either of posting lists is empty
+		if(firstQueryPostings.size() == 0 || secondQueryPostings.size() == 0){
+			return resultPostings;
+		}
+		
+		/**Get the AND or NOT AND result of the first and the second QueryComponents**/
+		
+		//Get the AND NOT
 		if(firstQueryComp.isNegative() || secondQueryComp.isNegative()){
 			List<Posting> positivePostings;
 			List<Posting> negativePostings;
 			if(firstQueryComp.isNegative()){
-				positivePostings = secondQueryComp.getPostings(index);
-				negativePostings = firstQueryComp.getPostings(index);
+				positivePostings = secondQueryPostings;
+				negativePostings = firstQueryPostings;
 			}else{
-				positivePostings = firstQueryComp.getPostings(index);
-				negativePostings = secondQueryComp.getPostings(index);
+				positivePostings = firstQueryPostings;
+				negativePostings = secondQueryPostings;
 			}
 			int pos = 0;
 			int neg = 0;
@@ -80,9 +91,8 @@ public class AndQuery implements QueryComponent {
 				}
 			}
 		}
+		//Get the AND
 		else{
-			List<Posting> firstQueryPostings = firstQueryComp.getPostings(index);
-			List<Posting> secondQueryPostings = secondQueryComp.getPostings(index);
 			int firstPosition = 0;
 			int secondPosition = 0;
 			int currentFirstDocId;
@@ -106,7 +116,8 @@ public class AndQuery implements QueryComponent {
 			}
 		}
 		
-		//Get the AND or AND NOT result of the following QueryComponents
+		/**Get the AND or AND NOT result of the following QueryComponents**/
+		
 		if(mComponents.size() > 2){
 			for(int i = 2; i < mComponents.size(); i++){
 				
@@ -114,6 +125,12 @@ public class AndQuery implements QueryComponent {
 				List<Posting> currentQueryPostings = currentQueryComp.getPostings(index);
 				List<Posting> tempResultPostings = new ArrayList<Posting>();
 				
+				//Check if current QueryComponent has 0 postings
+				if(currentQueryPostings.size() == 0){
+					return resultPostings;
+				}
+				
+				//AND query
 				if(!currentQueryComp.isNegative()){
 					int firstPosition = 0;
 					int secondPosition = 0;
@@ -137,6 +154,7 @@ public class AndQuery implements QueryComponent {
 						}
 					}
 				}
+				//AND NOT query
 				else{
 					int pos = 0;
 					int neg = 0;
