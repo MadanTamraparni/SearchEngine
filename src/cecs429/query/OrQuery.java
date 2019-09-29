@@ -31,7 +31,7 @@ public class OrQuery implements QueryComponent {
 			List<Posting> temp = new ArrayList<Posting>(); 
 			int len = Math.min(firstList.size(), secondList.size());
 			int x=0, y=0;
-			while(x<len && y<len)
+			while(x< firstList.size() && y< secondList.size())
 			{
 				Posting firstPosting = firstList.get(x);
 				Posting secondPosting = secondList.get(y);
@@ -50,7 +50,7 @@ public class OrQuery implements QueryComponent {
 						y++;
 				}
 			}
-			if(x == len)
+			if(x == firstList.size())
 			{
 				while(y < secondList.size()) {
 				
@@ -59,7 +59,7 @@ public class OrQuery implements QueryComponent {
 				}
 					
 			}
-			else if(y == len)
+			else if(y == secondList.size())
 			{
 				while(x < firstList.size())
 				{
@@ -78,5 +78,11 @@ public class OrQuery implements QueryComponent {
 		return "(" +
 		 String.join(" + ", mComponents.stream().map(c -> c.toString()).collect(Collectors.toList()))
 		 + " )";
+	}
+
+	@Override
+	public boolean isNegative() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

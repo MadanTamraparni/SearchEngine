@@ -14,19 +14,26 @@ import java.util.List;
 public class PhraseLiteral implements QueryComponent {
 	// The list of individual terms in the phrase.
 	private List<String> mTerms = new ArrayList<>();
-	
+	private boolean mIsNegative;
 	/**
 	 * Constructs a PhraseLiteral with the given individual phrase terms.
 	 */
-	public PhraseLiteral(List<String> terms) {
+	public PhraseLiteral(List<String> terms, boolean isNegative) {
 		mTerms.addAll(terms);
+		mIsNegative = isNegative;
 	}
 	
 	/**
 	 * Constructs a PhraseLiteral given a string with one or more individual terms separated by spaces.
 	 */
-	public PhraseLiteral(String terms) {
+	public PhraseLiteral(String terms, boolean isNegative) {
 		mTerms.addAll(Arrays.asList(terms.split(" ")));
+		mIsNegative = isNegative;
+	}
+	
+	@Override
+	public boolean isNegative(){
+		return mIsNegative;
 	}
 	
 	@Override

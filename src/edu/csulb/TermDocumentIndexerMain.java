@@ -82,18 +82,19 @@ public class TermDocumentIndexerMain {
             		System.out.println(vocabList.get(i));
             	System.out.println("Size of the Vocabulary = " + vocabList.size());
             	break;
-            }
-            else if(query.charAt(0) == NEAR_STR){
-				String[] subString = query.split(" ");
-				NearLiteral near = new NearLiteral(subString[0].substring(1, subString[0].length()), 
-				subString[1].charAt(subString[1].length() - 1),
-				subString[2].substring(0, subString[2].length()- 1));
-				for (Posting p : near.getPostings(index)) {
-					System.out.println("Document ID " + p.getDocumentId());
-					// Below print line only for tracing the index
-					System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
-				}
 			}
+			// This is for testing purpose
+            // else if(query.charAt(0) == NEAR_STR){
+			// 	String[] subString = query.split(" ");
+			// 	NearLiteral near = new NearLiteral(subString[0].substring(1, subString[0].length()), 
+			// 	subString[1].charAt(subString[1].length() - 1),
+			// 	subString[2].substring(0, subString[2].length()- 1));
+			// 	for (Posting p : near.getPostings(index)) {
+			// 		System.out.println("Document ID " + p.getDocumentId());
+			// 		// Below print line only for tracing the index
+			// 		System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
+			// 	}
+			// }
             if(query.length() == 0)
             	continue;
             QueryComponent queryComponent = queryParser.parseQuery(query);
@@ -115,7 +116,8 @@ public class TermDocumentIndexerMain {
 
 	private static void timeConvert(long time){
 		double seconds = time / 1000.0;
-		System.out.println(seconds/60.0 + "minutes " + seconds%60 + "seconds.");
+		int min = (int)(seconds/60.0), intSecond = (int)(seconds%60);
+		System.out.println(min + " minute/s " + intSecond + " seconds.");
 	}
 	
 	private static Index indexCorpus(DocumentCorpus corpus) {
