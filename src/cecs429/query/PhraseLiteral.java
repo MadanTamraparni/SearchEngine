@@ -34,33 +34,56 @@ public class PhraseLiteral implements QueryComponent {
 		
 		// TODO: program this method. Retrieve the postings for the individual terms in the phrase,
 		// and positional merge them together.
-		List<Posting> postingList = new ArrayList<Posting>();
 		List<Posting> firstList = index.getPostings(mTerms.get(0));
-		Iterator firstIterator = firstList.iterator();
-		for(int gap=1; gap < mTerms.size(); gap++)
+		int gap = 1;
+		for(int j=1; j < mTerms.size(); j++)
 		{
-			List<Posting> compareList = index.getPostings(mTerms.get(gap));
-			Iterator compIterator = compareList.iterator();
-			while(firstIterator.hasNext() && compIterator.hasNext())
+			List<Posting> secondList = index.getPostings(mTerms.get(j));
+			List<Posting> temp = new ArrayList<Posting>(); 
+			int firstListSize = firstList.size();
+			int secondListSize = secondList.size();
+			int firstListPtr=0, secondListPtr=0;
+			while(firstListPtr<firstListSize && secondListPtr<secondListSize)
 			{
-				Posting first = (Posting) firstIterator.next();
-				Posting compare = (Posting) compIterator.next();
-				List<Integer> firstPositions = first.getPositions();
-				List<Integer> compPositions = compare.getPositions();
-				int len = Math.min(firstPositions.size(), compPositions.size());
-				for(int i = 0, j=0; i < len && j < len; i++, j++)
+				Posting firstPosting = firstList.get(firstListPtr);
+				Posting secondPosting = secondList.get(secondListPtr);
+				if(secondPosting.getDocumentId() == firstPosting.getDocumentId())
 				{
-					if(compPositions.get(j) - firstPositions.get(i) == gap)
+					List<Integer> firstPos = firstPosting.getPositions();
+					List<Integer> secondPos = secondPosting.getPositions();
+					int firPosPtr = 0, secPosPtr = 0;
+					while(firPosPtr < firstPos.size() && secPosPtr < secondPos.size())
 					{
-						postingList.add(first);
-					}
+						int firPosValue = firstPos.get(firPosPtr);
+						int secPosValue = secondPos.get(secPosPtr);
+						if(secPosValue - firPosValue == gap)
+						{	
+							temp.add(firstPosting);
+							break;
+						}
+						if(firPosValue == secPosValue)
+						{
+							firPosPtr++;
+							secPosPtr++;
+						}
+						else if(firPosValue > secPosValue)
+							secPosPtr++;
+						else
+							firPosPtr++;
+					}	
+					firstListPtr++;
+					secondListPtr++;
 				}
-			}
-			firstList = postingList;
+				else if(firstPosting.getDocumentId() > secondPosting.getDocumentId())
+					secondListPtr++;
+				else
+					firstListPtr++;
+			}	
+			firstList = temp;
+			gap++;
 		}
-		return postingList;
+		return firstList;
 	}
-	//private void phraseMerge(List<Posting> resList, List<Posting> currList, int gap)
 	
 	@Override
 	public String toString() {
