@@ -100,12 +100,11 @@ public class TermDocumentIndexerMain {
             QueryComponent queryComponent = queryParser.parseQuery(query);
             System.out.println("Size = " + queryComponent.getPostings(index).size());
             for (Posting p : queryComponent.getPostings(index)) {
-            	int docId = p.getDocumentId();
-            	if(docId == 0)
-            		docId = 1;
-				System.out.println("Document ID \"article" + docId + ".json\"");
+            	//int doc = p.getDocumentId();
+            	//doc++;
+				//System.out.println("Document ID \"article" + doc + ".json\"");
 				// Below print line only for tracing the index
-				//System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
+				System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
             }
 
 			

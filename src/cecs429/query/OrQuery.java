@@ -29,9 +29,9 @@ public class OrQuery implements QueryComponent {
 		{
 			List<Posting> secondList = mComponents.get(j).getPostings(index);
 			List<Posting> temp = new ArrayList<Posting>(); 
-			int len = Math.min(firstList.size(), secondList.size());
+//			int len = Math.min(firstList.size(), secondList.size());
 			int x=0, y=0;
-			while(x< firstList.size() && y< secondList.size())
+			while(x<firstList.size() && y < secondList.size())
 			{
 				Posting firstPosting = firstList.get(x);
 				Posting secondPosting = secondList.get(y);

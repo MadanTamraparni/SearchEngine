@@ -96,7 +96,8 @@ public class BooleanQueryParser {
 			do {
 				// Extract the next literal from the subquery.
 				Literal lit = findNextLiteral(subquery, subStart);
-				
+				if(lit == null)
+					break;
 				// Add the literal component to the conjunctive list.
 				/**** Check if the literal component is negative(NOT)****/
 				QueryComponent literalComponent = lit.literalComponent;
@@ -206,6 +207,8 @@ public class BooleanQueryParser {
 		{
 			++startIndex;
 			int closePhrase = subquery.indexOf('"',startIndex);
+			if(closePhrase == -1)
+				return null;
 			lengthOut = closePhrase - startIndex; // Assuming that there is close phrase
 			
 			return new Literal(new StringBounds(startIndex, lengthOut), 

@@ -11,6 +11,7 @@ public class Posting {
 	private List<Integer> mPositions;
 	
 	public Posting(int documentId) {
+		//System.out.println("Doc ID = " + documentId);
 		mDocumentId = documentId;
 		mPositions = new ArrayList<Integer>();
 	}

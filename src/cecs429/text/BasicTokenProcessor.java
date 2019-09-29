@@ -67,7 +67,7 @@ public class BasicTokenProcessor implements TokenProcessor {
 	private String getAplhaNumericToken(String token)
 	{
 		ArrayList<Character> specialChars = new ArrayList<>(Arrays.asList('[',']','(',')','"'));
-		//char[] specialCharacters = new char[]{'[',']','(',')','"',};
+
 		if(token.length() == 0 || token.length() == 1)
 			return token;
 		
@@ -77,9 +77,11 @@ public class BasicTokenProcessor implements TokenProcessor {
 		boolean startIndexFound = false, endIndexFound = false;
 		while(true)
 		{
+
 			if(Character.isAlphabetic(chArray[startIndex]) 
 				|| Character.isDigit(chArray[startIndex]) 
 				|| specialChars.contains(chArray[startIndex]))
+
 			{
 				if(startIndexFound == false)
 				{	
@@ -89,9 +91,11 @@ public class BasicTokenProcessor implements TokenProcessor {
 			else
 				startIndex++;
 			
+
 			if(Character.isAlphabetic(chArray[endIndex]) 
 				|| Character.isDigit(chArray[endIndex]) 
 				|| specialChars.contains(chArray[endIndex]))
+
 			{
 				if(endIndexFound == false)
 				{	

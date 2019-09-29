@@ -10,7 +10,7 @@ public class TempClass {
 
 //		for(String s: proc.enhancedProcessToken("Hewlett-Packard-Computing"))
 //=======
-		for(String s: proc.enhancedProcessToken("[marine Near/2  coastal]"))
+		for(String s: proc.enhancedProcessToken("$%%marine $#@#Near coastal$#@$"))
 //>>>>>>> 67febae0b1cac8a4b5b3924b42517f4d7384f8ca
 		{
 			System.out.println(s);
