@@ -1,5 +1,6 @@
 package cecs429.query;
 import cecs429.index.*;
+import cecs429.text.TokenProcessor;
 
 import java.util.List;
 
@@ -11,6 +12,6 @@ public interface QueryComponent {
     /**
      * Retrieves a list of postings for the query component, using an Index as the source.
      */
-    List<Posting> getPostings(Index index);
+    List<Posting> getPostings(Index index, TokenProcessor processor);
     boolean isNegative();
 }

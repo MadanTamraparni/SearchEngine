@@ -21,19 +21,9 @@ public class BasicTokenProcessor implements TokenProcessor {
 	@Override
 	public List<String> enhancedProcessToken(String token) {
 		// TODO Auto-generated method stub
-		//System.out.println(token);
 		token = getAplhaNumericToken(token);
 		token = token.toLowerCase();
 		List<String> tokenList = processHypenToken(token);
-
-		for(int i = 0; i < tokenList.size(); i++){
-			int length = tokenList.get(i).length();
-			if(length == 0) continue;
-			char temp = tokenList.get(i).charAt(length - 1);
-			if(temp == ']' || temp == ')'){
-				tokenList.set(i, m_Stemmer.GetStemmedToken(tokenList.get(i).substring(0,length - 1)) + temp);
-			}
-		}
 		return tokenList;
 	}
 	
@@ -42,11 +32,6 @@ public class BasicTokenProcessor implements TokenProcessor {
 		List<String> listHyphenToken = new ArrayList<String>(); 
 		if(token.contains(STR_HYPHEN))
 		{
-			if(token.charAt(0) == '-')
-			{
-				listHyphenToken.add(m_Stemmer.GetStemmedToken(token.substring(1)));
-				return listHyphenToken;
-			}
 			StringTokenizer tokenizer = new StringTokenizer(token,"-");
 			StringBuilder finalString = new StringBuilder();
 			while(tokenizer.hasMoreTokens())
@@ -55,7 +40,7 @@ public class BasicTokenProcessor implements TokenProcessor {
 				finalString.append(temp);
 				listHyphenToken.add(m_Stemmer.GetStemmedToken(temp));
 			}
-			listHyphenToken.add(finalString.toString());
+			listHyphenToken.add(0,finalString.toString());
 		}
 		else
 		{
@@ -66,8 +51,6 @@ public class BasicTokenProcessor implements TokenProcessor {
 	
 	private String getAplhaNumericToken(String token)
 	{
-		ArrayList<Character> specialChars = new ArrayList<>(Arrays.asList('[',']','(',')','"'));
-
 		if(token.length() == 0 || token.length() == 1)
 			return token;
 		
@@ -79,9 +62,7 @@ public class BasicTokenProcessor implements TokenProcessor {
 		{
 
 			if(Character.isAlphabetic(chArray[startIndex]) 
-				|| Character.isDigit(chArray[startIndex]) 
-				|| specialChars.contains(chArray[startIndex]))
-
+				|| Character.isDigit(chArray[startIndex])) 
 			{
 				if(startIndexFound == false)
 				{	
@@ -93,9 +74,7 @@ public class BasicTokenProcessor implements TokenProcessor {
 			
 
 			if(Character.isAlphabetic(chArray[endIndex]) 
-				|| Character.isDigit(chArray[endIndex]) 
-				|| specialChars.contains(chArray[endIndex]))
-
+				|| Character.isDigit(chArray[endIndex])) 
 			{
 				if(endIndexFound == false)
 				{	

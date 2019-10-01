@@ -19,6 +19,7 @@ import cecs429.query.QueryComponent;
 import cecs429.text.BasicTokenProcessor;
 import cecs429.text.EnglishTokenStream;
 import cecs429.text.PorterStemmer;
+import cecs429.text.TokenProcessor;
 
 import javax.swing.JTextField;
 import java.awt.GridLayout;
@@ -135,7 +136,7 @@ public class SearchEngineGui extends JFrame {
 		searchButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String query;
-				
+				TokenProcessor  processor = new BasicTokenProcessor();
 				while(true){
 		            query = txtSearch.getText();
 		            if(query.equals(QUIT_STR))
@@ -170,7 +171,7 @@ public class SearchEngineGui extends JFrame {
 						NearLiteral near = new NearLiteral(subString[0].substring(1, subString[0].length()), 
 						subString[1].charAt(subString[1].length() - 1),
 						subString[2].substring(0, subString[2].length()- 1));
-						for (Posting p : near.getPostings(index)) {
+						for (Posting p : near.getPostings(index, processor)) {
 							textArea.append("Document ID " + p.getDocumentId() + "\n");
 							// Below print line only for tracing the index
 							textArea.append("Title: " + corpus.getDocument(p.getDocumentId()).getTitle() + "\n");
@@ -182,8 +183,8 @@ public class SearchEngineGui extends JFrame {
 		            
 		            System.out.println("Search");
 		            QueryComponent queryComponent = queryParser.parseQuery(query);
-		            textArea.append("Size = " + queryComponent.getPostings(index).size() + "\n");
-		            for (Posting p : queryComponent.getPostings(index)) {
+		            textArea.append("Size = " + queryComponent.getPostings(index, processor).size() + "\n");
+		            for (Posting p : queryComponent.getPostings(index, processor)) {
 		            	int docId = p.getDocumentId();
 		            	//if(docId == 0)
 		            		//docId = 1;

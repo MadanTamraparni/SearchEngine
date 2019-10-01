@@ -19,6 +19,7 @@ import cecs429.query.QueryComponent;
 import cecs429.text.BasicTokenProcessor;
 import cecs429.text.EnglishTokenStream;
 import cecs429.text.PorterStemmer;
+import cecs429.text.TokenProcessor;
 import cecs429.text.TokenStream;
 import cecs429.query.NearLiteral;
 
@@ -98,8 +99,9 @@ public class TermDocumentIndexerMain {
             if(query.length() == 0)
             	continue;
             QueryComponent queryComponent = queryParser.parseQuery(query);
-            System.out.println("Size = " + queryComponent.getPostings(index).size());
-            for (Posting p : queryComponent.getPostings(index)) {
+            TokenProcessor processor = new BasicTokenProcessor();
+            System.out.println("Size = " + queryComponent.getPostings(index, processor).size());
+            for (Posting p : queryComponent.getPostings(index, processor)) {
             	//int doc = p.getDocumentId();
             	//doc++;
 				//System.out.println("Document ID \"article" + doc + ".json\"");

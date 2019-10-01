@@ -2,6 +2,7 @@ package cecs429.query;
 
 import cecs429.index.Index;
 import cecs429.index.Posting;
+import cecs429.text.TokenProcessor;
 
 import java.util.List;
 
@@ -22,8 +23,8 @@ public class TermLiteral implements QueryComponent {
 	}
 	
 	@Override
-	public List<Posting> getPostings(Index index) {
-		return index.getPostings(mTerm);
+	public List<Posting> getPostings(Index index, TokenProcessor processor) {
+		return index.getPostings(processor.enhancedProcessToken(mTerm).get(0));
 	}
 	
 	@Override

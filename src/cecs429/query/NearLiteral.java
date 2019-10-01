@@ -5,6 +5,7 @@ import java.util.List;
 
 import cecs429.index.Index;
 import cecs429.index.Posting;
+import cecs429.text.TokenProcessor;
 
 public class NearLiteral implements QueryComponent {
     private String term1, term2;
@@ -18,11 +19,13 @@ public class NearLiteral implements QueryComponent {
 
 
     @Override
-    public List<Posting> getPostings(Index index) {
+    public List<Posting> getPostings(Index index, TokenProcessor processor) {
         // TODO Auto-generated method stub
-        List<Posting> postingTerm1 = index.getPostings(term1);
-        List<Posting> postingTerm2 = index.getPostings(term2);
-        
+    	
+        List<Posting> postingTerm1 = index.getPostings(processor.enhancedProcessToken(term1).get(0));
+        List<Posting> postingTerm2 = index.getPostings(processor.enhancedProcessToken(term2).get(0));
+//        System.out.println("Term 1 = " + processor.enhancedProcessToken(term1).get(0));
+//    	System.out.println("Term 2 = " + processor.enhancedProcessToken(term2).get(0));
         //PrintPosting(postingTerm1);
         //PrintPosting(postingTerm2);
 

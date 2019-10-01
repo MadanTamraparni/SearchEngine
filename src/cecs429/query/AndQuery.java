@@ -2,6 +2,7 @@ package cecs429.query;
 
 import cecs429.index.Index;
 import cecs429.index.Posting;
+import cecs429.text.TokenProcessor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,7 @@ public class AndQuery implements QueryComponent {
 	}
 	
 	@Override
-	public List<Posting> getPostings(Index index) {
+	public List<Posting> getPostings(Index index, TokenProcessor processor) {
 		
 		
 		// TODO: program the merge for an AndQuery, by gathering the postings of the composed QueryComponents and
@@ -31,8 +32,8 @@ public class AndQuery implements QueryComponent {
 		QueryComponent secondQueryComp = mComponents.get(1);
 		
 		//Get the postings of the first and second QueryComponents
-		List<Posting> firstQueryPostings = firstQueryComp.getPostings(index);
-		List<Posting> secondQueryPostings = secondQueryComp.getPostings(index);
+		List<Posting> firstQueryPostings = firstQueryComp.getPostings(index, processor);
+		List<Posting> secondQueryPostings = secondQueryComp.getPostings(index, processor);
 		
 		//Check if either of posting lists is empty
 		if(firstQueryPostings.size() == 0 || secondQueryPostings.size() == 0){
@@ -122,7 +123,7 @@ public class AndQuery implements QueryComponent {
 			for(int i = 2; i < mComponents.size(); i++){
 				
 				QueryComponent currentQueryComp = mComponents.get(i);
-				List<Posting> currentQueryPostings = currentQueryComp.getPostings(index);
+				List<Posting> currentQueryPostings = currentQueryComp.getPostings(index, processor);
 				List<Posting> tempResultPostings = new ArrayList<Posting>();
 				
 				//Check if current QueryComponent has 0 postings
