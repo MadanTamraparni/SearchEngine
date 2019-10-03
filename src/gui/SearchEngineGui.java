@@ -137,64 +137,73 @@ public class SearchEngineGui extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				String query;
 				TokenProcessor  processor = new BasicTokenProcessor();
-				while(true){
-		            query = txtSearch.getText();
-		            if(query.equals(QUIT_STR))
-		            {
-		            	System.out.println(QUIT_STR);
-		            	textArea.append("q entry for quit.\n");
-		            	break;
-		            }
-		            else if(query.contains(STEM_STR))
-		            {
-		            	System.out.println(STEM_STR);
-		            	query = query.substring(STEM_STR.length()+1);
-		            	PorterStemmer stemmer = new PorterStemmer();
-		            	textArea.append("Stemmer Token = " + stemmer.GetStemmedToken(query) + "\n");
-		            }
-		            else if(query.contains(INDEX_STR))
-		            {
-		            	System.out.println(INDEX_STR);
-		            }
-		            else if(query.contains(VOCAB_STR))
-		            {
-		            	System.out.println(VOCAB_STR);
-		            	List<String> vocabList = index.getVocabulary();
-		            	for(int i =0; i < 1000; i++)
-		            		textArea.append(vocabList.get(i) + "\n");
-		            	textArea.append("Size of the Vocabulary = " + vocabList.size() + "\n");
-		            	break;
-		            }
-		            else if(query.charAt(0) == NEAR_STR){
-		            	System.out.println(NEAR_STR);
-						String[] subString = query.split(" ");
-						NearLiteral near = new NearLiteral(subString[0].substring(1, subString[0].length()), 
-						subString[1].charAt(subString[1].length() - 1),
-						subString[2].substring(0, subString[2].length()- 1));
-						for (Posting p : near.getPostings(index, processor)) {
-							textArea.append("Document ID " + p.getDocumentId() + "\n");
-							// Below print line only for tracing the index
-							textArea.append("Title: " + corpus.getDocument(p.getDocumentId()).getTitle() + "\n");
-						}
-					}
-		            if(query.length() == 0){
-		            	continue;
-		            }
-		            
-		            System.out.println("Search");
-		            QueryComponent queryComponent = queryParser.parseQuery(query);
-		            textArea.append("Size = " + queryComponent.getPostings(index, processor).size() + "\n");
-		            for (Posting p : queryComponent.getPostings(index, processor)) {
-		            	int docId = p.getDocumentId();
-		            	//if(docId == 0)
-		            		//docId = 1;
-						//System.out.println("Document ID \"article" + docId + ".json\"");
+				
+				query = txtSearch.getText();
+	            if(query.equals(QUIT_STR))
+	            {
+	            	textArea.append("q entry for quit.\n");
+	            	return;
+	            }
+	            else if(query.contains(STEM_STR))
+	            {
+	            	query = query.substring(STEM_STR.length()+1);
+	            	PorterStemmer stemmer = new PorterStemmer();
+	            	textArea.append("Stemmer Token = " + stemmer.GetStemmedToken(query) + "\n");
+	            	return;
+	            }
+	            else if(query.contains(INDEX_STR))
+	            {
+	            	query = query.substring(INDEX_STR.length()+1);
+	            	File testDir = new File(query);
+	                if(testDir.isDirectory()){
+	                	textArea.append("Directory Existed. Procceed to indexing...\n"); 
+	    				long timeStart = System.currentTimeMillis();
+	        			corpus = DirectoryCorpus.loadJsonDirectory(new File(query).toPath(),".json");
+	        			index = indexCorpus(corpus) ;
+	        			long timeEnd = System.currentTimeMillis();
+	        			long time = timeEnd - timeStart;
+	    		        double seconds = time / 1000.0;
+	    		        textArea.append(seconds/60.0 + "minutes " + seconds%60 + "seconds." + "\n");
+	    			}else{
+	    				textArea.append("Directory does not exist.\n");
+	    			}
+	                return;
+	            }
+	            else if(query.contains(VOCAB_STR))
+	            {
+	            	List<String> vocabList = index.getVocabulary();
+	            	for(int i =0; i < 1000; i++){
+	            		textArea.append(vocabList.get(i) + "\n");
+	            	}
+	            	textArea.append("Size of the Vocabulary = " + vocabList.size() + "\n");
+	            	return;
+	            }
+	            else if(query.charAt(0) == NEAR_STR){
+					String[] subString = query.split(" ");
+					NearLiteral near = new NearLiteral(subString[0].substring(1, subString[0].length()), 
+					subString[1].charAt(subString[1].length() - 1),
+					subString[2].substring(0, subString[2].length()- 1));
+					for (Posting p : near.getPostings(index, processor)) {
+						textArea.append("Document ID " + p.getDocumentId() + "\n");
 						// Below print line only for tracing the index
 						textArea.append("Title: " + corpus.getDocument(p.getDocumentId()).getTitle() + "\n");
-		            }
-		            break;
-		           
-		        }
+					}
+					return;
+				}
+	            if(query.length() == 0){
+	            	return;
+	            }
+	            
+	            QueryComponent queryComponent = queryParser.parseQuery(query);
+	            textArea.append("Size = " + queryComponent.getPostings(index, processor).size() + "\n");
+	            for (Posting p : queryComponent.getPostings(index, processor)) {
+	            	int docId = p.getDocumentId();
+	            	//if(docId == 0)
+	            		//docId = 1;
+					//System.out.println("Document ID \"article" + docId + ".json\"");
+					// Below print line only for tracing the index
+					textArea.append("Title: " + corpus.getDocument(p.getDocumentId()).getTitle() + "\n");
+	            }
 			}
 		});
 		

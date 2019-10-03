@@ -71,10 +71,24 @@ public class TermDocumentIndexerMain {
             	query = query.substring(STEM_STR.length()+1);
             	PorterStemmer stemmer = new PorterStemmer();
             	System.out.println("Stemmer Token = " + stemmer.GetStemmedToken(query));
+            	continue;
             }
             else if(query.contains(INDEX_STR))
             {
-            	
+            	query = query.substring(INDEX_STR.length()+1);
+            	File testDir = new File(query);
+                if(testDir.isDirectory()){
+    				System.out.println("Directory Existed. Procceed to indexing...");
+    				timeStart = System.currentTimeMillis();
+        			corpus = DirectoryCorpus.loadJsonDirectory(new File(query).toPath(),".json");
+
+        			index = indexCorpus(corpus) ;
+        			timeEnd = System.currentTimeMillis();
+        			timeConvert(timeEnd - timeStart);
+    			}else{
+    				System.out.println("Directory does not exist. ");
+    			}
+                continue;
             }
             else if(query.contains(VOCAB_STR))
             {
@@ -82,7 +96,7 @@ public class TermDocumentIndexerMain {
             	for(int i =0; i < 1000; i++)
             		System.out.println(vocabList.get(i));
             	System.out.println("Size of the Vocabulary = " + vocabList.size());
-            	break;
+            	continue;
 			}
 			// This is for testing purpose
             // else if(query.charAt(0) == NEAR_STR){
@@ -96,8 +110,9 @@ public class TermDocumentIndexerMain {
 			// 		System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
 			// 	}
 			// }
-            if(query.length() == 0)
+            if(query.length() == 0){
             	continue;
+            }
             QueryComponent queryComponent = queryParser.parseQuery(query);
             TokenProcessor processor = new BasicTokenProcessor();
             System.out.println("Size = " + queryComponent.getPostings(index, processor).size());
