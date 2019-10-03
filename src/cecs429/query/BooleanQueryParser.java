@@ -74,6 +74,7 @@ public class BooleanQueryParser {
 				/**** Check if the literal component is negative(NOT)****/
 				QueryComponent literalComponent = lit.literalComponent;
 				
+				
 				if(literalComponent.isNegative()){
 					subqueryLiterals.add(new NotQuery(literalComponent));
 				}else{
@@ -128,10 +129,16 @@ public class BooleanQueryParser {
 		while (test == ' ' || test == '+') {
 			test = query.charAt(++startIndex);
 		}
-		
+		int nextPlus = 0;
 		// Find the end of the next subquery.
-		int nextPlus = query.indexOf('+', startIndex + 1);
-		
+		// Check for paranthesis
+		if(query.charAt(startIndex) == '('){
+			int closeParanthesis = query.indexOf(')', startIndex + 1);
+			nextPlus = query.indexOf('+', closeParanthesis + 1);
+		}else{
+			nextPlus = query.indexOf('+', startIndex + 1);
+		}
+	
 		if (nextPlus < 0) {
 			// If there is no other + sign, then this is the final subquery in the
 			// query string.
@@ -190,17 +197,31 @@ public class BooleanQueryParser {
 
 		// }
 		else if(subquery.charAt(startIndex) == '['){
+			System.out.println("subquery:" + subquery);
 			++startIndex;
 			int endNearLiteral = subquery.indexOf(']',startIndex);
+			if(endNearLiteral == -1)
+				return null;
 			lengthOut = endNearLiteral - startIndex;
 			// Might need fix on how long the token is
 			// Wating on Madan
 			String[] nearLiteral = subquery.substring(startIndex, startIndex + lengthOut).split(" ");
+			for(String i : nearLiteral) System.out.println(i);
 
 			return new Literal(new StringBounds(startIndex, lengthOut),
 					new NearLiteral(nearLiteral[0], 
 									Character.getNumericValue(nearLiteral[1].charAt(nearLiteral[1].length() - 1) - '0'), 
 									nearLiteral[2]));
+		}
+		else if(subquery.charAt(startIndex) == '('){
+			System.out.println("sub:" + subquery);
+			++startIndex;
+			int endParaLiteral = subquery.indexOf(')', startIndex);
+			if(endParaLiteral == -1) return null;
+			lengthOut = endParaLiteral - startIndex;
+			return new Literal(new StringBounds(startIndex, lengthOut),
+					new ParanthesisLiteral(subquery.substring(startIndex, startIndex + lengthOut)));
+
 		}
 		else
 		{

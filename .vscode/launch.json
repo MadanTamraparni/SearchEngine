@@ -2,10 +2,17 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CodeLens (Launch) - SearchEngineGui",
+            "request": "launch",
+            "mainClass": "gui.SearchEngineGui",
+            "projectName": "src"
+        },
+        {
+            "type": "java",
             "name": "CodeLens (Launch) - MasterWindow",
             "request": "launch",
             "mainClass": "gui.MasterWindow",
-            "projectName": "src",
+            "projectName": "src"
         },
         {
             "type": "java",
