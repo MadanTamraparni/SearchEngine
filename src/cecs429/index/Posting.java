@@ -11,18 +11,22 @@ public class Posting {
 	private List<Integer> mPositions;
 	
 	public Posting(int documentId) {
-		//System.out.println("Doc ID = " + documentId);
+		
 		mDocumentId = documentId;
 		mPositions = new ArrayList<Integer>();
 	}
 	
+	//add a position 
 	public void addPosition(int position){
 		mPositions.add(position);
 	}
+	
+	//return the document ID
 	public int getDocumentId() {
 		return mDocumentId;
 	}
 	
+	//return the positions
 	public List<Integer> getPositions(){
 		return mPositions;
 	}
