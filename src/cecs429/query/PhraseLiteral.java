@@ -65,6 +65,7 @@ public class PhraseLiteral implements QueryComponent {
 					{
 						int firPosValue = firstPos.get(firPosPtr);
 						int secPosValue = secondPos.get(secPosPtr);
+						//check if difference in the positions is equal to the gap
 						if(secPosValue - firPosValue == gap)
 						{	
 							temp.add(firstPosting);

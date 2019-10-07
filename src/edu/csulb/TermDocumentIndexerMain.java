@@ -55,7 +55,6 @@ public class TermDocumentIndexerMain {
 
 		long timeEnd = System.currentTimeMillis();
 		timeConvert(timeEnd - timeStart);
-        // We aren't ready to use a full query parser; for now, we'll only support single-term queries.
 
         String query = "";
         while(true){
@@ -98,34 +97,17 @@ public class TermDocumentIndexerMain {
             	System.out.println("Size of the Vocabulary = " + vocabList.size());
             	continue;
 			}
-			// This is for testing purpose
-            // else if(query.charAt(0) == NEAR_STR){
-			// 	String[] subString = query.split(" ");
-			// 	NearLiteral near = new NearLiteral(subString[0].substring(1, subString[0].length()), 
-			// 	subString[1].charAt(subString[1].length() - 1),
-			// 	subString[2].substring(0, subString[2].length()- 1));
-			// 	for (Posting p : near.getPostings(index)) {
-			// 		System.out.println("Document ID " + p.getDocumentId());
-			// 		// Below print line only for tracing the index
-			// 		System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
-			// 	}
-			// }
             if(query.length() == 0){
             	continue;
             }
             QueryComponent queryComponent = queryParser.parseQuery(query);
             TokenProcessor processor = new BasicTokenProcessor();
-            System.out.println("Size = " + queryComponent.getPostings(index, processor).size());
-            for (Posting p : queryComponent.getPostings(index, processor)) {
-            	//int doc = p.getDocumentId();
-            	//doc++;
-				//System.out.println("Document ID \"article" + doc + ".json\"");
-				// Below print line only for tracing the index
+            List<Posting> postingList = queryComponent.getPostings(index, processor);
+            
+            for (Posting p : postingList) {
 				System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
             }
-
-			
-           
+            System.out.println("Posting List size = " + postingList.size()); 
         }
         in.close();
 	}
