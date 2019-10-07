@@ -9,6 +9,7 @@ import cecs429.text.TokenProcessor;
 
 public class NotQuery implements QueryComponent{
 	private QueryComponent mComponent;
+	
 	public NotQuery(QueryComponent component){
 		mComponent = component;
 	}

@@ -18,9 +18,9 @@ public class PositionalInvertedIndex implements Index {
 		mVocabulary = new ArrayList<String>(); 
 	}
 	
+	//return a list of postings for a term
 	@Override
 	public List<Posting> getPostings(String term) {
-		//System.out.println("Term = " + term);
 		List<Posting> postings = new LinkedList<Posting>();
 		
 		if(mPostingMap.containsKey(term))
@@ -29,7 +29,8 @@ public class PositionalInvertedIndex implements Index {
 		}
 		return postings;	
 	}
-
+	
+	//return a list of vocabularies
 	@Override
 	public List<String> getVocabulary() {
 		
@@ -37,10 +38,11 @@ public class PositionalInvertedIndex implements Index {
 		return mVocabulary;
 	}
 	
+	//add a term with its document ID and position 
 	public void addTerm(String term, int documentId, int position)
 	{
-		if(mPostingMap.containsKey(term))
-		{
+		//if the term already exists in the index
+		if(mPostingMap.containsKey(term)){
 			List<Posting> list = mPostingMap.get(term);
 			if(documentId != list.get(list.size()-1).getDocumentId()){
 				list.add(new Posting(documentId));
@@ -50,16 +52,20 @@ public class PositionalInvertedIndex implements Index {
 			}
 				
 		}
-		else
-		{
+		//if the term doesn't exist in the index
+		else{
 			List<Posting> postings = new LinkedList<Posting>();
 			postings.add(new Posting(documentId));
 			postings.get(postings.size()-1).addPosition(position);;
 			mPostingMap.put(term,postings);
 		}
-		if(mVocabulary.contains(term))
+		//if the term already exist in the vocabulary
+		if(mVocabulary.contains(term)){
 			return;
-		else
+		}
+		//if the term doesn't exist in the vocabulary
+		else{
 			mVocabulary.add(term);
+		}
 	}
 }
