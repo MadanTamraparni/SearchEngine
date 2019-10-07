@@ -3,6 +3,7 @@ package edu.csulb;
 import cecs429.text.BasicTokenProcessor;
 
 public class TempClass {
+	// This class is mean to test function before making adjustment to the main
 	public static void main(String[] args)
 	{
 		BasicTokenProcessor proc = new BasicTokenProcessor();

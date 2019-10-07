@@ -74,7 +74,6 @@ public class BooleanQueryParser {
 				/**** Check if the literal component is negative(NOT)****/
 				QueryComponent literalComponent = lit.literalComponent;
 				
-				
 				if(literalComponent.isNegative()){
 					subqueryLiterals.add(new NotQuery(literalComponent));
 				}else{

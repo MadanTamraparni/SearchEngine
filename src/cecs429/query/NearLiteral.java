@@ -21,13 +21,10 @@ public class NearLiteral implements QueryComponent {
     @Override
     public List<Posting> getPostings(Index index, TokenProcessor processor) {
         // TODO Auto-generated method stub
-    	
+        
+        // Creating two posting list for each terms
         List<Posting> postingTerm1 = index.getPostings(processor.enhancedProcessToken(term1).get(0));
         List<Posting> postingTerm2 = index.getPostings(processor.enhancedProcessToken(term2).get(0));
-//        System.out.println("Term 1 = " + processor.enhancedProcessToken(term1).get(0));
-//    	System.out.println("Term 2 = " + processor.enhancedProcessToken(term2).get(0));
-        //PrintPosting(postingTerm1);
-        //PrintPosting(postingTerm2);
 
         // finding a union list that both doc appear
         List<Posting> Union = new ArrayList<Posting>();
@@ -43,25 +40,14 @@ public class NearLiteral implements QueryComponent {
                 pt1++;
                 pt2++;
             }
+            // Increase smaller document ID
             else if(tempPosting1.getDocumentId() < tempPosting2.getDocumentId()) pt1++;
             else pt2++;
         }
         return Union;
     }
 
-    //============================Testing Code only=========================
-    // this print function for purpose of checking
-    // Delete in future
-    private void PrintPosting(List<Posting> postingList){
-        System.out.println("[");
-        for(Posting i : postingList){
-            System.out.print(i.getDocumentId() + "->");
-            for(int k : i.getPositions()) System.out.print(k+ ",");
-            System.out.println("");
-        }
-        System.out.println("]");
-    }
-    // ===========================End testing==============================
+    // Check for up to k position of two terms with same document
     private static boolean nearPosition(List<Integer> termPosition1, List<Integer> termPosition2, int k){
         int lo1 = 0, lo2 = 0, hi1 = termPosition1.size(), hi2 = termPosition2.size();
         while(lo1 < hi1 && lo2 < hi2){

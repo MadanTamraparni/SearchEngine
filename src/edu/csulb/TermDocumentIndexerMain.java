@@ -29,11 +29,10 @@ public class TermDocumentIndexerMain {
 	public static final String QUIT_STR = "q";
 	public static final String INDEX_STR = "index";
 	public static final String VOCAB_STR = "vocab";
-	public static final char NEAR_STR = '[';
 	
 	public static void main(String[] args)
 	{
-		//DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(Paths.get("").toAbsolutePath(), ".txt");
+		// User input and check for file directory
         String path = "";
         Scanner in = new Scanner(System.in);
         while(true){
@@ -47,15 +46,19 @@ public class TermDocumentIndexerMain {
             System.out.print("Directory does not exist. ");
         }
 		long timeStart = System.currentTimeMillis();
-        DocumentCorpus corpus = DirectoryCorpus.loadJsonDirectory(new File(path).toPath(),".json");
+		// Making document corpus
+		DocumentCorpus corpus = DirectoryCorpus.loadJsonDirectory(new File(path).toPath(),".json");
+		
+		// Commented line below is to handle text file
+		//DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(Paths.get("").toAbsolutePath(), ".txt");
 
         Index index = indexCorpus(corpus) ;
         
         BooleanQueryParser queryParser = new BooleanQueryParser();
 
 		long timeEnd = System.currentTimeMillis();
+		// printout time it take to index the corpus
 		timeConvert(timeEnd - timeStart);
-        // We aren't ready to use a full query parser; for now, we'll only support single-term queries.
 
         String query = "";
         while(true){
@@ -98,18 +101,6 @@ public class TermDocumentIndexerMain {
             	System.out.println("Size of the Vocabulary = " + vocabList.size());
             	continue;
 			}
-			// This is for testing purpose
-            // else if(query.charAt(0) == NEAR_STR){
-			// 	String[] subString = query.split(" ");
-			// 	NearLiteral near = new NearLiteral(subString[0].substring(1, subString[0].length()), 
-			// 	subString[1].charAt(subString[1].length() - 1),
-			// 	subString[2].substring(0, subString[2].length()- 1));
-			// 	for (Posting p : near.getPostings(index)) {
-			// 		System.out.println("Document ID " + p.getDocumentId());
-			// 		// Below print line only for tracing the index
-			// 		System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
-			// 	}
-			// }
             if(query.length() == 0){
             	continue;
             }
@@ -165,13 +156,6 @@ public class TermDocumentIndexerMain {
 					currentPosition++;
 					index.addTerm(newToken, docId, currentPosition);
 				}
-
-				// ==============================Testing section===========================
-				// Below is old code that not using our enhancedProcessToken
-				// it serve purpose of testing Near operation
-				// currentPosition++;
-				// index.addTerm(processor.processToken(token), docId, currentPosition);
-				// ============================= End testing===============================
 			}
 		}
 		return index;

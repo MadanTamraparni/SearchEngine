@@ -17,6 +17,7 @@ public class OrQuery implements QueryComponent {
 	
 	public OrQuery(List<QueryComponent> components) {
 		mComponents = components;
+		
 	}
 	
 	@Override
