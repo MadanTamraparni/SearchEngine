@@ -48,7 +48,7 @@ public class BasicTokenProcessor implements TokenProcessor {
 		}
 		return listHyphenToken;
 	}
-	
+	//Method to strip of leading and trailing special characters
 	private String getAplhaNumericToken(String token)
 	{
 		if(token.length() == 0 || token.length() == 1)
@@ -61,8 +61,7 @@ public class BasicTokenProcessor implements TokenProcessor {
 		while(true)
 		{
 
-			if(Character.isAlphabetic(chArray[startIndex]) 
-				|| Character.isDigit(chArray[startIndex])) 
+			if(Character.isAlphabetic(chArray[startIndex]) || Character.isDigit(chArray[startIndex])) 
 			{
 				if(startIndexFound == false)
 				{	
@@ -73,8 +72,7 @@ public class BasicTokenProcessor implements TokenProcessor {
 				startIndex++;
 			
 
-			if(Character.isAlphabetic(chArray[endIndex]) 
-				|| Character.isDigit(chArray[endIndex])) 
+			if(Character.isAlphabetic(chArray[endIndex]) || Character.isDigit(chArray[endIndex])) 
 			{
 				if(endIndexFound == false)
 				{	
@@ -87,8 +85,7 @@ public class BasicTokenProcessor implements TokenProcessor {
 			if(startIndex >= endIndex)
 				return token;
 			if(startIndexFound && endIndexFound)
-				break;
-			
+				break;			
 		}
 		return token.substring(startIndex, endIndex+1);
 	}

@@ -31,8 +31,7 @@ public class OrQuery implements QueryComponent {
 		{
 			List<Posting> secondList = mComponents.get(j).getPostings(index, processor);
 			List<Posting> temp = new ArrayList<Posting>(); 
-//			int len = Math.min(firstList.size(), secondList.size());
-			int x=0, y=0;
+			int x=0, y=0; //pointers for iterating through the positions
 			while(x<firstList.size() && y < secondList.size())
 			{
 				Posting firstPosting = firstList.get(x);
@@ -52,10 +51,11 @@ public class OrQuery implements QueryComponent {
 						y++;
 				}
 			}
+			//Copy the remaining elements from the larger list(merge)
 			if(x == firstList.size())
 			{
-				while(y < secondList.size()) {
-				
+				while(y < secondList.size())
+				{
 					temp.add(secondList.get(y));
 					y++;
 				}

@@ -8,8 +8,16 @@ import cecs429.text.TokenProcessor;
 
 public class ParanthesisLiteral implements QueryComponent {
     private String query;
-    public ParanthesisLiteral(String queryIn){
-        query = queryIn;
+    private boolean mIsNegative;
+    public ParanthesisLiteral(String queryIn, boolean isNegative){
+    	System.out.println("IN QUERY = " + queryIn);
+    	mIsNegative = isNegative;
+    	int endIndex = queryIn.length();
+    	endIndex--;
+    	while(queryIn.charAt(endIndex) == ')')
+    		endIndex--;
+        query = queryIn.substring(0, endIndex+1);
+        System.out.println("Q = " + query);
     }
 
     @Override
@@ -30,7 +38,7 @@ public class ParanthesisLiteral implements QueryComponent {
     @Override
     public boolean isNegative() {
         // TODO Auto-generated method stub
-        return false;
+        return mIsNegative;
     }
     
 }

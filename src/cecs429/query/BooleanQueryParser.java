@@ -13,6 +13,7 @@ import cecs429.text.TokenProcessor;
  * Does not handle phrase queries, NOT queries, NEAR queries, or wildcard queries... yet.
  */
 public class BooleanQueryParser {
+	private boolean mIsParenthesis = false;
 	/**
 	 * Identifies a portion of a string with a starting index and a length.
 	 */
@@ -44,7 +45,7 @@ public class BooleanQueryParser {
 	 */
 	public QueryComponent parseQuery(String query) {
 		int start = 0;
-		
+		mIsParenthesis = false;
 		// General routine: scan the query to identify a literal, and put that literal into a list.
 		//	Repeat until a + or the end of the query is encountered; build an AND query with each
 		//	of the literals found. Repeat the scan-and-build-AND-query phase for each segment of the
@@ -76,7 +77,13 @@ public class BooleanQueryParser {
 				
 				if(literalComponent.isNegative()){
 					subqueryLiterals.add(new NotQuery(literalComponent));
-				}else{
+				}
+				else if(mIsParenthesis)
+				{
+					QueryComponent queryCom = parseQuery(subquery.substring(lit.bounds.start,lit.bounds.start + lit.bounds.length-1))	;
+					subqueryLiterals.add(queryCom);
+				}
+				else{
 					subqueryLiterals.add(literalComponent);
 				}
 				/*******************************************************/
@@ -95,7 +102,8 @@ public class BooleanQueryParser {
 			if (subqueryLiterals.size() == 1) {
 				allSubqueries.add(subqueryLiterals.get(0));
 			}
-			else {
+			else 
+			{
 				// With more than one literal, we must wrap them in an AndQuery component.
 				allSubqueries.add(new AndQuery(subqueryLiterals));
 			}
@@ -105,13 +113,16 @@ public class BooleanQueryParser {
 		
 		// After processing all subqueries, we either have a single component or multiple components
 		// that must be combined with an OrQuery.
-		if (allSubqueries.size() == 1) {
+		if (allSubqueries.size() == 1) 
+		{
 			return allSubqueries.get(0);
 		}
-		else if (allSubqueries.size() > 1) {
+		else if (allSubqueries.size() > 1) 
+		{
 			return new OrQuery(allSubqueries);
 		}
-		else {
+		else 
+		{
 			return null;
 		}
 	}
@@ -125,20 +136,34 @@ public class BooleanQueryParser {
 		
 		// Find the start of the next subquery by skipping spaces and + signs.
 		char test = query.charAt(startIndex);
-		while (test == ' ' || test == '+') {
+		while (test == ' ' || test == '+')
+		{
 			test = query.charAt(++startIndex);
 		}
 		int nextPlus = 0;
 		// Find the end of the next subquery.
 		// Check for paranthesis
-		if(query.charAt(startIndex) == '('){
+		if(query.charAt(startIndex) == '(')
+		{
 			int closeParanthesis = query.indexOf(')', startIndex + 1);
-			nextPlus = query.indexOf('+', closeParanthesis + 1);
-		}else{
+			nextPlus = query.indexOf('+', closeParanthesis+1);
+		}
+		else
+		{
 			nextPlus = query.indexOf('+', startIndex + 1);
+			int braceIndex = query.indexOf('(', startIndex + 1);
+			if(braceIndex >= 0)
+			{
+				int endBrace = query.indexOf(')',braceIndex+1);
+				if(endBrace > nextPlus)
+				{
+					nextPlus = query.indexOf('+', endBrace + 1);
+				}
+			}
 		}
 	
-		if (nextPlus < 0) {
+		if (nextPlus < 0) 
+		{
 			// If there is no other + sign, then this is the final subquery in the
 			// query string.
 			lengthOut = query.length() - startIndex;
@@ -150,7 +175,8 @@ public class BooleanQueryParser {
 			// Move nextPlus backwards until finding a non-space non-plus character.
 			// Purpose: To remove all white space and plus. Give back the term
 			test = query.charAt(nextPlus);
-			while (test == ' ' || test == '+') {
+			while (test == ' ' || test == '+') 
+			{
 				test = query.charAt(--nextPlus);
 			}
 			
@@ -167,14 +193,17 @@ public class BooleanQueryParser {
 	private Literal findNextLiteral(String subquery, int startIndex) {
 		int subLength = subquery.length();
 		int lengthOut;
+		mIsParenthesis = false;
 		boolean isNegative = false;
 		// Skip past white space.
-		while (subquery.charAt(startIndex) == ' ') {
+		while (subquery.charAt(startIndex) == ' ') 
+		{
 			++startIndex;
 		}
 		
 		/**Check if the query starts with a negative sign***/
-		if(subquery.charAt(startIndex) == '-'){
+		if(subquery.charAt(startIndex) == '-')
+		{
 			isNegative = true;
 			startIndex += 1;
 		}
@@ -192,18 +221,13 @@ public class BooleanQueryParser {
 			return new Literal(new StringBounds(startIndex, lengthOut), 
 					new PhraseLiteral(subquery.substring(startIndex, startIndex + lengthOut), isNegative));
 		}
-		// else if(subquery.charAt(startIndex) == '('){
-
-		// }
-		else if(subquery.charAt(startIndex) == '['){
-			System.out.println("subquery:" + subquery);
+		else if(subquery.charAt(startIndex) == '[')
+		{
 			++startIndex;
 			int endNearLiteral = subquery.indexOf(']',startIndex);
 			if(endNearLiteral == -1)
 				return null;
 			lengthOut = endNearLiteral - startIndex;
-			// Might need fix on how long the token is
-			// Wating on Madan
 			String[] nearLiteral = subquery.substring(startIndex, startIndex + lengthOut).split(" ");
 			for(String i : nearLiteral) System.out.println(i);
 
@@ -212,15 +236,15 @@ public class BooleanQueryParser {
 									Character.getNumericValue(nearLiteral[1].charAt(nearLiteral[1].length() - 1) - '0'), 
 									nearLiteral[2]));
 		}
-		else if(subquery.charAt(startIndex) == '('){
-			System.out.println("sub:" + subquery);
+		else if(subquery.charAt(startIndex) == '(')
+		{
 			++startIndex;
 			int endParaLiteral = subquery.indexOf(')', startIndex);
 			if(endParaLiteral == -1) return null;
 			lengthOut = endParaLiteral - startIndex;
-			return new Literal(new StringBounds(startIndex, lengthOut),
-					new ParanthesisLiteral(subquery.substring(startIndex, startIndex + lengthOut)));
-
+			mIsParenthesis = true;
+			return new Literal(new StringBounds(startIndex, lengthOut+1),
+					new TermLiteral(subquery.substring(startIndex, startIndex + lengthOut), isNegative));
 		}
 		else
 		{

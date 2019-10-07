@@ -106,17 +106,12 @@ public class TermDocumentIndexerMain {
             }
             QueryComponent queryComponent = queryParser.parseQuery(query);
             TokenProcessor processor = new BasicTokenProcessor();
-            System.out.println("Size = " + queryComponent.getPostings(index, processor).size());
-            for (Posting p : queryComponent.getPostings(index, processor)) {
-            	//int doc = p.getDocumentId();
-            	//doc++;
-				//System.out.println("Document ID \"article" + doc + ".json\"");
-				// Below print line only for tracing the index
+            List<Posting> postingList = queryComponent.getPostings(index, processor);
+            
+            for (Posting p : postingList) {
 				System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
             }
-
-			
-           
+            System.out.println("Posting List size = " + postingList.size()); 
         }
         in.close();
 	}
