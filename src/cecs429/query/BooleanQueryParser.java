@@ -83,7 +83,8 @@ public class BooleanQueryParser {
 					QueryComponent queryCom = parseQuery(subquery.substring(lit.bounds.start,lit.bounds.start + lit.bounds.length-1))	;
 					subqueryLiterals.add(queryCom);
 				}
-				else{
+				else
+				{
 					subqueryLiterals.add(literalComponent);
 				}
 				/*******************************************************/
@@ -152,7 +153,7 @@ public class BooleanQueryParser {
 		{
 			nextPlus = query.indexOf('+', startIndex + 1);
 			int braceIndex = query.indexOf('(', startIndex + 1);
-			if(braceIndex >= 0)
+			if(braceIndex >= 0 && (braceIndex < nextPlus))
 			{
 				int endBrace = query.indexOf(')',braceIndex+1);
 				if(endBrace > nextPlus)
@@ -230,7 +231,11 @@ public class BooleanQueryParser {
 			lengthOut = endNearLiteral - startIndex;
 			String[] nearLiteral = subquery.substring(startIndex, startIndex + lengthOut).split(" ");
 
+<<<<<<< HEAD
 			return new Literal(new StringBounds(startIndex, lengthOut + 1),
+=======
+			return new Literal(new StringBounds(startIndex, lengthOut+1),
+>>>>>>> 01806c06f3f1db2f9fd3a718b6f56b432781e838
 					new NearLiteral(nearLiteral[0], 
 									Character.getNumericValue(nearLiteral[1].charAt(nearLiteral[1].length() - 1) - '0'), 
 									nearLiteral[2], isNegative));

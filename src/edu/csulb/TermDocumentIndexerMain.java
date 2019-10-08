@@ -1,9 +1,6 @@
 package edu.csulb;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
 
@@ -13,15 +10,13 @@ import cecs429.documents.DocumentCorpus;
 import cecs429.index.Index;
 import cecs429.index.PositionalInvertedIndex;
 import cecs429.index.Posting;
-import cecs429.index.TermDocumentIndex;
 import cecs429.query.BooleanQueryParser;
 import cecs429.query.QueryComponent;
 import cecs429.text.BasicTokenProcessor;
 import cecs429.text.EnglishTokenStream;
 import cecs429.text.PorterStemmer;
 import cecs429.text.TokenProcessor;
-import cecs429.text.TokenStream;
-import cecs429.query.NearLiteral;
+
 
 public class TermDocumentIndexerMain {
 
