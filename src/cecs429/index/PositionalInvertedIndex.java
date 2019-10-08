@@ -4,18 +4,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
 public class PositionalInvertedIndex implements Index {
 
 	private HashMap<String, List<Posting>> mPostingMap;
-	private List<String> mVocabulary;
+	private HashSet<String> mVocabulary;
 	
 	public PositionalInvertedIndex()
 	{
 		mPostingMap = new HashMap<String, List<Posting>>();
-		mVocabulary = new ArrayList<String>(); 
+		mVocabulary = new HashSet<String>(); 
 	}
 	
 	//return a list of postings for a term
@@ -33,9 +34,9 @@ public class PositionalInvertedIndex implements Index {
 	//return a list of vocabularies
 	@Override
 	public List<String> getVocabulary() {
-		
-		Collections.sort(mVocabulary);
-		return mVocabulary;
+		ArrayList<String> vocabulary = new ArrayList<String>(mVocabulary);
+		Collections.sort(vocabulary);
+		return vocabulary;
 	}
 	
 	//add a term with its document ID and position 
