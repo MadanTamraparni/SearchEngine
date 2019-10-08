@@ -2,7 +2,6 @@ package cecs429.query;
 
 import java.util.List;
 
-import cecs429.documents.DirectoryCorpus;
 import cecs429.index.Index;
 import cecs429.index.Posting;
 import cecs429.text.TokenProcessor;
