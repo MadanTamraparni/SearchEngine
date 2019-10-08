@@ -38,7 +38,7 @@ public class TermDocumentIndexerMain {
 				System.out.println("Directory Existed. Procceed to indexing...");
 				break;
 			}
-            System.out.print("Directory does not exist. ");
+            System.out.println("Directory does not exist. ");
         }
 		long timeStart = System.currentTimeMillis();
 		// Making document corpus

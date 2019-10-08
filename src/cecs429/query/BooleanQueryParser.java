@@ -231,11 +231,7 @@ public class BooleanQueryParser {
 			lengthOut = endNearLiteral - startIndex;
 			String[] nearLiteral = subquery.substring(startIndex, startIndex + lengthOut).split(" ");
 
-<<<<<<< HEAD
-			return new Literal(new StringBounds(startIndex, lengthOut + 1),
-=======
 			return new Literal(new StringBounds(startIndex, lengthOut+1),
->>>>>>> 01806c06f3f1db2f9fd3a718b6f56b432781e838
 					new NearLiteral(nearLiteral[0], 
 									Character.getNumericValue(nearLiteral[1].charAt(nearLiteral[1].length() - 1) - '0'), 
 									nearLiteral[2], isNegative));

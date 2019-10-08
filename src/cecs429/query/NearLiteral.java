@@ -10,12 +10,12 @@ import cecs429.text.TokenProcessor;
 public class NearLiteral implements QueryComponent {
     private String term1, term2;
     private int k;
-    private boolean imNegative;
-    public NearLiteral(String term1, int k, String term2, boolean imNegative){
+    private boolean mNegative;
+    public NearLiteral(String term1, int k, String term2, boolean mNegative){
         this.term1 = term1;
         this.term2 = term2;
         this.k = k;
-        this.imNegative = imNegative;
+        this.mNegative = mNegative;
     }
 
 
@@ -27,8 +27,6 @@ public class NearLiteral implements QueryComponent {
         // Creating two posting list for each terms
         List<Posting> postingTerm1 = index.getPostings(processor.enhancedProcessToken(term1).get(0));
         List<Posting> postingTerm2 = index.getPostings(processor.enhancedProcessToken(term2).get(0));
-        System.out.println(processor.enhancedProcessToken(term1).get(0));
-        System.out.println(processor.enhancedProcessToken(term2).get(0));
 
         // finding a union list that both doc appear
         List<Posting> Union = new ArrayList<Posting>();
@@ -43,7 +41,7 @@ public class NearLiteral implements QueryComponent {
                 pt1++;
                 pt2++;
             }
-            // Increase smaller document ID
+            // Increase smaller document ID of two posting list
             else if(tempPosting1.getDocumentId() < tempPosting2.getDocumentId()) pt1++;
             else pt2++;
         }
@@ -67,7 +65,7 @@ public class NearLiteral implements QueryComponent {
 	@Override
 	public boolean isNegative() {
 		// TODO Auto-generated method stub
-		return imNegative;
+		return mNegative;
 	}
 
 }
