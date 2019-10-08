@@ -229,14 +229,13 @@ public class BooleanQueryParser {
 				return null;
 			lengthOut = endNearLiteral - startIndex;
 			String[] nearLiteral = subquery.substring(startIndex, startIndex + lengthOut).split(" ");
-			for(String i : nearLiteral) System.out.println(i);
 
-			return new Literal(new StringBounds(startIndex, lengthOut),
+			return new Literal(new StringBounds(startIndex, lengthOut + 1),
 					new NearLiteral(nearLiteral[0], 
 									Character.getNumericValue(nearLiteral[1].charAt(nearLiteral[1].length() - 1) - '0'), 
-									nearLiteral[2]));
-		}
-		else if(subquery.charAt(startIndex) == '(')
+									nearLiteral[2], isNegative));
+		} 
+		else if(subquery.charAt(startIndex)== '(')
 		{
 			++startIndex;
 			int endParaLiteral = subquery.indexOf(')', startIndex);

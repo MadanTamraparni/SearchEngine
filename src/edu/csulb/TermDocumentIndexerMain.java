@@ -108,9 +108,9 @@ public class TermDocumentIndexerMain {
             TokenProcessor processor = new BasicTokenProcessor();
             List<Posting> postingList = queryComponent.getPostings(index, processor);
             
-            for (Posting p : postingList) {
-				System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
-            }
+            // for (Posting p : postingList) {
+			// 	System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
+            // }
             System.out.println("Posting List size = " + postingList.size()); 
         }
         in.close();
