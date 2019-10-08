@@ -28,9 +28,12 @@ public class NearLiteral implements QueryComponent {
         List<Posting> postingTerm1 = index.getPostings(processor.enhancedProcessToken(term1).get(0));
         List<Posting> postingTerm2 = index.getPostings(processor.enhancedProcessToken(term2).get(0));
 
-        // finding a union list that both doc appear
+        
         List<Posting> Union = new ArrayList<Posting>();
+        // pointer to go through posting list of two given terms
         int pt1 = 0, pt2 = 0, size1 = postingTerm1.size(), size2 = postingTerm2.size();
+        
+        // finding a union list that both doc appear
         while(pt1 < size1 && pt2 < size2){
             Posting tempPosting1 = postingTerm1.get(pt1);
             Posting tempPosting2 = postingTerm2.get(pt2);
@@ -49,13 +52,17 @@ public class NearLiteral implements QueryComponent {
     }
 
     // Check for up to k position of two terms with same document
-    private static boolean nearPosition(List<Integer> termPosition1, List<Integer> termPosition2, int k){
-        int lo1 = 0, lo2 = 0, hi1 = termPosition1.size(), hi2 = termPosition2.size();
+    private boolean nearPosition(List<Integer> termPosition1, List<Integer> termPosition2, int k){
+        // pointers go through position of two same document
+        int lo1 = 0, lo2 = 0, hi1 = termPosition1.size(), hi2 = termPosition2.size(), diff = 0;
         while(lo1 < hi1 && lo2 < hi2){
             int pt1 = termPosition1.get(lo1), pt2 = termPosition2.get(lo2);
-            int diff = pt2 - pt1;
-            if(diff <= k) return true;
-            else lo1++;
+            if(pt2 > pt1) diff = pt2 - pt1;
+            else diff = pt1 - pt2;
+
+            if(diff <= k && diff >= 0) return true;
+            else if(pt1 < pt2) lo1++;
+            else lo2++;
         }
         return false;
     }
