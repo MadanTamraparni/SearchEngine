@@ -5,6 +5,8 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import cecs429.documents.DirectoryCorpus;
 import cecs429.documents.Document;
@@ -20,14 +22,20 @@ import cecs429.text.PorterStemmer;
 import cecs429.text.TokenProcessor;
 
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.JTextArea;
 import javax.swing.JScrollPane;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.List;
 import java.awt.event.ActionEvent;
+
+import javax.swing.DefaultListModel;
 import javax.swing.DropMode;
+import javax.swing.JList;
 
 public class SearchEngineGui extends JFrame {
 	
@@ -68,7 +76,7 @@ public class SearchEngineGui extends JFrame {
 	
 	public SearchEngineGui() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 561, 415);
+		setBounds(100, 100, 561, 430);
 		mContentPane = new JPanel();
 		mContentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(mContentPane);
@@ -96,14 +104,34 @@ public class SearchEngineGui extends JFrame {
 		searchButton.setBounds(468, 30, 87, 20);
 		mContentPane.add(searchButton);
 		
-		//scroll for text area
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(6, 55, 549, 332);
-		mContentPane.add(scrollPane);
+		//List
+		JScrollPane scrollPane;
+		DefaultListModel<String> listModel = new DefaultListModel<>();
+        
+        JList<String> list = new JList<>(listModel);
+        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        list.addMouseListener(new MouseAdapter(){
+        	public void mouseClicked(MouseEvent e){
+        		JList list = (JList)e.getSource(); //get the source of the event
+        		int index;
+        		//Check if it's a double-click
+        		if(e.getClickCount() == 2){
+        			index = list.locationToIndex(e.getPoint()); //get the index of the element that is double clicked 
+        			openContentWindow(null); //pass the content to be displayed on the new window
+        		}
+        		
+        	}
+        });
+        scrollPane = new JScrollPane(list);
+        scrollPane.setBounds(6, 140, 549, 265);
+        mContentPane.add(scrollPane);
 		
-		//text area for output
+		//Text Area
+		JScrollPane scrollPane_1 = new JScrollPane();
+		scrollPane_1.setBounds(6, 62, 549, 72);
+		mContentPane.add(scrollPane_1);
 		JTextArea textArea = new JTextArea();
-		scrollPane.setViewportView(textArea);
+		scrollPane_1.setViewportView(textArea);
 		
 		//action listener for index button: getting the corpus and indexing terms
 		directoryButton.addActionListener(new ActionListener() {
@@ -125,7 +153,8 @@ public class SearchEngineGui extends JFrame {
 		        long timeEnd = System.currentTimeMillis();
 		        long time = timeEnd - timeStart;
 		        double seconds = time / 1000.0;
-				textArea.append(seconds/60.0 + "minutes " + seconds%60 + "seconds." + "\n");
+		        int min = (int)(seconds/60.0), intSecond = (int)(seconds%60);
+		        textArea.append(" Time to create index "+ min + " minutes " + intSecond + " seconds." + "\n");
 			}
 		});
 		
@@ -160,7 +189,8 @@ public class SearchEngineGui extends JFrame {
 	        			long timeEnd = System.currentTimeMillis();
 	        			long time = timeEnd - timeStart;
 	    		        double seconds = time / 1000.0;
-	    		        textArea.append(seconds/60.0 + "minutes " + seconds%60 + "seconds." + "\n");
+	    		        int min = (int)(seconds/60.0), intSecond = (int)(seconds%60);
+	    		        textArea.append(" Time to create index "+ min + " minutes " + intSecond + " seconds." + "\n");
 	    			}else{
 	    				textArea.append("Directory does not exist.\n");
 	    			}
@@ -181,18 +211,52 @@ public class SearchEngineGui extends JFrame {
 	            }
 	            
 	            QueryComponent queryComponent = mQueryParser.parseQuery(query);
-	            
-	            for (Posting p : queryComponent.getPostings(mIndex, processor)) {
-					textArea.append("Title: " + mCorpus.getDocument(p.getDocumentId()).getTitle() + "\n");
+	            listModel.clear();
+	            List<Posting> postingList = queryComponent.getPostings(mIndex, processor);
+	            for (Posting p : postingList) {
+					listModel.addElement("Title: " + mCorpus.getDocument(p.getDocumentId()).getTitle() + "\n");
 	            }
-	            textArea.append("Posting List size = " + queryComponent.getPostings(mIndex, processor).size() + "\n");
+	            listModel.addElement("Posting List size = " + queryComponent.getPostings(mIndex, processor).size() + "\n");
 			}
 		});
-		
-		
+
 	}
 	
 	
+	/**Method for opening a new window**/
+	private static void openContentWindow(String content){
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					JFrame frame = new JFrame();
+					JTextArea text = new JTextArea();
+					JPanel panel = new JPanel();
+					
+					panel.setBorder(new EmptyBorder(5, 5, 5, 5));
+					frame.setContentPane(panel);
+					panel.setLayout(null);
+					
+					frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+					frame.setBounds(100, 100, 561, 430);
+					JScrollPane scrollPane = new JScrollPane();
+					scrollPane.setBounds(5, 5, 549, 400);
+					panel.add(scrollPane);
+					scrollPane.setViewportView(text);
+					text.setLineWrap(true);
+					text.append(content);
+					
+					
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+	
+	
+	
+	/**For indexing corpus**/
 	private static Index indexCorpus(DocumentCorpus corpus) {
 		BasicTokenProcessor processor = new BasicTokenProcessor();
 		

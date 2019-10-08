@@ -55,7 +55,8 @@ public class TermDocumentIndexerMain {
 		// printout time it take to index the corpus
 		timeConvert(timeEnd - timeStart);
 
-        String query = "";
+		String query = "";
+		// menu for handling special queries
         while(true){
             System.out.print("Enter search query: ");
             query = in.nextLine();
@@ -103,9 +104,9 @@ public class TermDocumentIndexerMain {
             TokenProcessor processor = new BasicTokenProcessor();
             List<Posting> postingList = queryComponent.getPostings(index, processor);
             
-            // for (Posting p : postingList) {
-			// 	System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
-            // }
+            for (Posting p : postingList) {
+				System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
+            }
             System.out.println("Posting List size = " + postingList.size()); 
         }
         in.close();
@@ -121,9 +122,6 @@ public class TermDocumentIndexerMain {
 		//HashSet<String> vocabulary = new HashSet<>();
 		BasicTokenProcessor processor = new BasicTokenProcessor();
 		
-		// First, build the vocabulary hash set.
-		
-		// TODO:
 		// Get all the documents in the corpus by calling GetDocuments().
 		// Iterate through the documents, and:
 		// Tokenize the document's content by constructing an EnglishTokenStream around the document's content.

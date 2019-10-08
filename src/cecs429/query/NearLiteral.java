@@ -28,9 +28,12 @@ public class NearLiteral implements QueryComponent {
         List<Posting> postingTerm1 = index.getPostings(processor.enhancedProcessToken(term1).get(0));
         List<Posting> postingTerm2 = index.getPostings(processor.enhancedProcessToken(term2).get(0));
 
-        // finding a union list that both doc appear
+        
         List<Posting> Union = new ArrayList<Posting>();
+        // pointer to go through posting list of two given terms
         int pt1 = 0, pt2 = 0, size1 = postingTerm1.size(), size2 = postingTerm2.size();
+        
+        // finding a union list that both doc appear
         while(pt1 < size1 && pt2 < size2){
             Posting tempPosting1 = postingTerm1.get(pt1);
             Posting tempPosting2 = postingTerm2.get(pt2);
@@ -69,8 +72,10 @@ public class NearLiteral implements QueryComponent {
             	lo1++;
             else
             	lo2++;
+        
         }
         return false;
+        
     }
 
 

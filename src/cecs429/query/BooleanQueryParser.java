@@ -72,7 +72,7 @@ public class BooleanQueryParser {
 				if(lit == null)
 					break;
 				// Add the literal component to the conjunctive list.
-				/**** Check if the literal component is negative(NOT)****/
+				/* Check if the literal component is negative(NOT)****/
 				QueryComponent literalComponent = lit.literalComponent;
 				
 				if(literalComponent.isNegative()){
@@ -87,7 +87,7 @@ public class BooleanQueryParser {
 				{
 					subqueryLiterals.add(literalComponent);
 				}
-				/*******************************************************/
+				
 				
 				// Set the next index to start searching for a literal.
 				subStart = lit.bounds.start + lit.bounds.length;
@@ -208,9 +208,9 @@ public class BooleanQueryParser {
 			isNegative = true;
 			startIndex += 1;
 		}
-		/***************************************************/
+
 		
-		//Code to check for phrase queries, if not present, default code should be executed
+		//Code to check for phrase, near, paranthesis, and default queries
 		if(subquery.charAt(startIndex) == '"')
 		{
 			++startIndex;
@@ -263,11 +263,5 @@ public class BooleanQueryParser {
 			 new StringBounds(startIndex, lengthOut),
 			 new TermLiteral(subquery.substring(startIndex, startIndex + lengthOut), isNegative));
 		}
-		/*
-		TODO:
-		Instead of assuming that we only have single-term literals, modify this method so it will create a PhraseLiteral
-		object if the first non-space character you find is a double-quote ("). In this case, the literal is not ended
-		by the next space character, but by the next double-quote character.
-		 */
 	}
 }
