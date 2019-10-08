@@ -181,10 +181,11 @@ public class SearchEngineGui extends JFrame {
 	            }
 	            
 	            QueryComponent queryComponent = mQueryParser.parseQuery(query);
-	            textArea.append("Size = " + queryComponent.getPostings(mIndex, processor).size() + "\n");
+	            
 	            for (Posting p : queryComponent.getPostings(mIndex, processor)) {
 					textArea.append("Title: " + mCorpus.getDocument(p.getDocumentId()).getTitle() + "\n");
 	            }
+	            textArea.append("Posting List size = " + queryComponent.getPostings(mIndex, processor).size() + "\n");
 			}
 		});
 		
