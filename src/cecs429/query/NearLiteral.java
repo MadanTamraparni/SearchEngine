@@ -37,7 +37,9 @@ public class NearLiteral implements QueryComponent {
             // check if term1 doc equal term2 doc
             if(tempPosting1.getDocumentId() == tempPosting2.getDocumentId()){
                 // nearPosition check if term1 and term2 posion equal to k
-                if(nearPosition(tempPosting1.getPositions(), tempPosting2.getPositions(), k)) Union.add(tempPosting1);
+                if(nearPosition(tempPosting1.getPositions(), tempPosting2.getPositions(), k)) {
+                	Union.add(tempPosting1);
+                }
                 pt1++;
                 pt2++;
             }
@@ -49,13 +51,24 @@ public class NearLiteral implements QueryComponent {
     }
 
     // Check for up to k position of two terms with same document
-    private static boolean nearPosition(List<Integer> termPosition1, List<Integer> termPosition2, int k){
-        int lo1 = 0, lo2 = 0, hi1 = termPosition1.size(), hi2 = termPosition2.size();
+    private boolean nearPosition(List<Integer> termPosition1, List<Integer> termPosition2, int k){
+        int lo1 = 0, lo2 = 0, hi1 = termPosition1.size(), hi2 = termPosition2.size(), diff =-1;
         while(lo1 < hi1 && lo2 < hi2){
             int pt1 = termPosition1.get(lo1), pt2 = termPosition2.get(lo2);
-            int diff = pt2 - pt1;
-            if(diff <= k) return true;
-            else lo1++;
+           
+            if(pt1 > pt2)
+            {
+            	lo2++;
+            	continue;
+            }
+            else
+            	diff = pt2 - pt1;
+            
+            if(diff >= 0 && diff <= k) return true;
+            else if(pt1 < pt2)
+            	lo1++;
+            else
+            	lo2++;
         }
         return false;
     }

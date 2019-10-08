@@ -233,7 +233,7 @@ public class BooleanQueryParser {
 
 			return new Literal(new StringBounds(startIndex, lengthOut+1),
 					new NearLiteral(nearLiteral[0], 
-									Character.getNumericValue(nearLiteral[1].charAt(nearLiteral[1].length() - 1) - '0'), 
+									nearLiteral[1].charAt(nearLiteral[1].length() - 1) - '0', 
 									nearLiteral[2], isNegative));
 		} 
 		else if(subquery.charAt(startIndex)== '(')
