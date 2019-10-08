@@ -11,6 +11,7 @@ import javax.swing.event.ListSelectionListener;
 import cecs429.documents.DirectoryCorpus;
 import cecs429.documents.Document;
 import cecs429.documents.DocumentCorpus;
+import cecs429.documents.FileDocument;
 import cecs429.index.Index;
 import cecs429.index.PositionalInvertedIndex;
 import cecs429.index.Posting;
@@ -29,7 +30,11 @@ import javax.swing.JScrollPane;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.List;
 import java.awt.event.ActionEvent;
 
@@ -46,6 +51,7 @@ public class SearchEngineGui extends JFrame {
 	private JPanel mContentPane;
 	private JTextField mTextDirectory;
 	private JTextField mTextSearch;
+	private List<Posting> mPostingList;
 	
 	public static final String STEM_STR = "stem";
 	public static final String QUIT_STR = "q";
@@ -116,10 +122,24 @@ public class SearchEngineGui extends JFrame {
         		int index;
         		//Check if it's a double-click
         		if(e.getClickCount() == 2){
-        			index = list.locationToIndex(e.getPoint()); //get the index of the element that is double clicked 
-        			openContentWindow(null); //pass the content to be displayed on the new window
+        			index = list.locationToIndex(e.getPoint()); //get the index of the element that is double clicked
+        			if(index == mPostingList.size())
+        				return;
+        			Posting p = mPostingList.get(index);
+        			Document d = mCorpus.getDocument(p.getDocumentId());
+        			BufferedReader br = (BufferedReader) d.getContent();
+        			String line = null;
+        			StringBuilder rslt = new StringBuilder();
+        			try {
+						while ((line = br.readLine()) != null) {
+						    rslt.append(line);
+						}
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+        			openContentWindow(rslt.toString()); //pass the content to be displayed on the new window
         		}
-        		
         	}
         });
         scrollPane = new JScrollPane(list);
@@ -212,8 +232,8 @@ public class SearchEngineGui extends JFrame {
 	            
 	            QueryComponent queryComponent = mQueryParser.parseQuery(query);
 	            listModel.clear();
-	            List<Posting> postingList = queryComponent.getPostings(mIndex, processor);
-	            for (Posting p : postingList) {
+	            mPostingList = queryComponent.getPostings(mIndex, processor);
+	            for (Posting p : mPostingList) {
 					listModel.addElement("Title: " + mCorpus.getDocument(p.getDocumentId()).getTitle() + "\n");
 	            }
 	            listModel.addElement("Posting List size = " + queryComponent.getPostings(mIndex, processor).size() + "\n");
