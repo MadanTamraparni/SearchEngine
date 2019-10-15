@@ -16,7 +16,7 @@ import cecs429.text.BasicTokenProcessor;
 import cecs429.text.EnglishTokenStream;
 import cecs429.text.PorterStemmer;
 import cecs429.text.TokenProcessor;
-
+import cecs429.index.DiskIndexWriter;
 
 public class TermDocumentIndexerMain {
 
@@ -47,7 +47,10 @@ public class TermDocumentIndexerMain {
 		// Commented line below is to handle text file
 		//DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(Paths.get("").toAbsolutePath(), ".txt");
 
-        Index index = indexCorpus(corpus) ;
+		Index index = indexCorpus(corpus);
+		String pathDisk = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
+		DiskIndexWriter indexDisk = new DiskIndexWriter();
+		indexDisk.WriteIndex(index, pathDisk);
         
         BooleanQueryParser queryParser = new BooleanQueryParser();
 
