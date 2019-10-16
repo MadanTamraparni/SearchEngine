@@ -1,5 +1,6 @@
 package cecs429.index;
 
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -11,6 +12,8 @@ public class DiskIndexWriter {
     // this is hard code for testing
     //private String path = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
     public void WriteIndex(Index index, String path){
+        int vocabOffset = 0;
+        int postingOffset = 0;
         Scanner in = new Scanner(System.in);
         do{
             File testDir = new File(path);
@@ -25,26 +28,67 @@ public class DiskIndexWriter {
 
         // Creating file
         File vocabFile = new File(path + "/vocab.bin");
-        try(FileOutputStream vocabFos = new FileOutputStream(vocabFile, true)){
+        checkFileExist(vocabFile);
+        File tableFile = new File(path + "/vocabTable.bin");
+        checkFileExist(tableFile);
+        File postingFile = new File(path + "/posting.bin");
+        checkFileExist(postingFile);
+        // Create all other file stream inside try parameter
+        try{
+            FileOutputStream vocabFos = new FileOutputStream(vocabFile, true);
+            FileOutputStream tableFos = new FileOutputStream(tableFile, true);
+            DataOutputStream tableStream = new DataOutputStream(tableFos);
             List<String> vocabList = index.getVocabulary();
-            System.out.println(vocabList.size());
             for(int i = 0; i < vocabList.size(); i++){
-                int vocabOffset = vocab(vocabList.get(i), vocabFos);
+                // there is a empty space register as a vocab i need to increment to avoid wrong
+                vocabTable(vocabOffset, postingOffset, tableStream);
+                vocabOffset += vocab(vocabList.get(i), vocabFos);
+                if(vocabList.get(i).isBlank()) vocabOffset++;
+                // PostingOffset here is just a test code
+                // change the line below to appropiately change the offset
+                postingOffset += 78;
+                vocabFos.flush();
+                tableFos.flush();
+                tableStream.flush();
             }
+            vocabFos.close();
+            tableFos.close();
+            tableStream.close();
+            
         } catch(IOException e){
             e.printStackTrace();
         }
 
     }
+    private void checkFileExist(File fileCheck){
+        if(fileCheck.exists()){
+            fileCheck.delete();
+            try{
+                fileCheck.createNewFile();
+            } catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
 
-    private int vocab(String term, FileOutputStream fos){
+    private void vocabTable(long vocabPosition, long postingPosition, DataOutputStream tableStream){
+        try{
+            //System.out.println("vocabPos: " + vocabPosition);
+            tableStream.writeLong(vocabPosition);
+            tableStream.writeLong(postingPosition);
+            System.out.println("postingpos: " + postingPosition);
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    private long vocab(String term, FileOutputStream fos){
         byte[] bytes = term.getBytes(StandardCharsets.UTF_8);
-        System.out.println(term + " : " + bytes.length);
         try{
             fos.write(bytes);
         } catch(IOException e){
             e.printStackTrace();
         }
-        return bytes.length;
+        return Long.valueOf(bytes.length);
     }
 }
