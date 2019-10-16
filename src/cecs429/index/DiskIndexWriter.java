@@ -31,7 +31,7 @@ public class DiskIndexWriter {
         checkFileExist(vocabFile);
         File tableFile = new File(path + "/vocabTable.bin");
         checkFileExist(tableFile);
-        File postingFile = new File(path + "/posting.bin");
+        File postingFile = new File(path + "/postings.bin");
         checkFileExist(postingFile);
         // Create all other file stream inside try parameter
         try{
@@ -43,7 +43,7 @@ public class DiskIndexWriter {
                 // there is a empty space register as a vocab i need to increment to avoid wrong
                 vocabTable(vocabOffset, postingOffset, tableStream);
                 vocabOffset += vocab(vocabList.get(i), vocabFos);
-                if(vocabList.get(i).isBlank()) vocabOffset++;
+                if(vocabList.get(i).isEmpty()) vocabOffset++;
                 // PostingOffset here is just a test code
                 // change the line below to appropiately change the offset
                 postingOffset += 78;
