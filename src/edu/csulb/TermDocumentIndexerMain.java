@@ -7,6 +7,7 @@ import java.util.Scanner;
 import cecs429.documents.DirectoryCorpus;
 import cecs429.documents.Document;
 import cecs429.documents.DocumentCorpus;
+import cecs429.index.DiskIndexWriter;
 import cecs429.index.Index;
 import cecs429.index.PositionalInvertedIndex;
 import cecs429.index.Posting;
@@ -16,7 +17,6 @@ import cecs429.text.BasicTokenProcessor;
 import cecs429.text.EnglishTokenStream;
 import cecs429.text.PorterStemmer;
 import cecs429.text.TokenProcessor;
-import cecs429.index.DiskIndexWriter;
 
 public class TermDocumentIndexerMain {
 
@@ -28,7 +28,7 @@ public class TermDocumentIndexerMain {
 	public static void main(String[] args)
 	{
 		// User input and check for file directory
-        String path = "";
+        String path = "", pathDisk = "";
         Scanner in = new Scanner(System.in);
         while(true){
             System.out.print("Enter document directory: ");
@@ -42,13 +42,23 @@ public class TermDocumentIndexerMain {
         }
 		long timeStart = System.currentTimeMillis();
 		// Making document corpus
-		DocumentCorpus corpus = DirectoryCorpus.loadJsonDirectory(new File(path).toPath(),".json");
+		//DocumentCorpus corpus = DirectoryCorpus.loadJsonDirectory(new File(path).toPath(),".json");
 		
 		// Commented line below is to handle text file
-		//DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(Paths.get("").toAbsolutePath(), ".txt");
+		DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(new File(path).toPath(), ".txt");
 
 		Index index = indexCorpus(corpus);
-		String pathDisk = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
+		//String pathDisk = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
+		while(true){
+			System.out.print("Enter bin save path: ");
+			pathDisk = in.nextLine();
+            File testDir = new File(path);
+            if(testDir.isDirectory()){
+				System.out.println("Directory Existed. Procceed to write on disk...");
+				break;
+            }
+            System.out.println("Directory does not exist. ");
+        }
 		DiskIndexWriter indexDisk = new DiskIndexWriter();
 		indexDisk.WriteIndex(index, pathDisk);
         

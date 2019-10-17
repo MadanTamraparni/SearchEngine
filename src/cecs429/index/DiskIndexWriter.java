@@ -15,18 +15,6 @@ public class DiskIndexWriter {
     public void WriteIndex(Index index, String path){
         int vocabOffset = 0;
         int postingOffset = 0;
-        Scanner in = new Scanner(System.in);
-        do{
-            File testDir = new File(path);
-            if(testDir.isDirectory()){
-				System.out.println("Directory Existed. Procceed to write on disk...");
-				break;
-            }
-            System.out.println("Directory does not exist. ");
-            System.out.print("Re-enter save bin directory: ");
-            path = in.nextLine();
-        }while(true);
-
         // Creating file
         File vocabFile = new File(path + "/vocab.bin");
         checkFileExist(vocabFile);
@@ -87,7 +75,6 @@ public class DiskIndexWriter {
             //System.out.println("vocabPos: " + vocabPosition);
             tableStream.writeLong(vocabPosition);
             tableStream.writeLong(postingPosition);
-            System.out.println("postingpos: " + postingPosition);
         }catch(IOException e){
             e.printStackTrace();
         }
