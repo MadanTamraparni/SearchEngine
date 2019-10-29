@@ -8,6 +8,7 @@ import cecs429.documents.DirectoryCorpus;
 import cecs429.documents.Document;
 import cecs429.documents.DocumentCorpus;
 import cecs429.index.DiskIndexWriter;
+import cecs429.index.DiskPositionalIndex;
 import cecs429.index.Index;
 import cecs429.index.PositionalInvertedIndex;
 import cecs429.index.Posting;
@@ -48,7 +49,7 @@ public class TermDocumentIndexerMain {
 		DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(new File(path).toPath(), ".txt");
 
 		Index index = indexCorpus(corpus);
-		//String pathDisk = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
+		
 		while(true){
 			System.out.print("Enter bin save path: ");
 			pathDisk = in.nextLine();
@@ -58,9 +59,13 @@ public class TermDocumentIndexerMain {
 				break;
             }
             System.out.println("Directory does not exist. ");
-        }
+		}
+		pathDisk = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
 		DiskIndexWriter indexDisk = new DiskIndexWriter();
 		indexDisk.WriteIndex(index, pathDisk);
+		List<Posting> cla = index.getPostings("a");
+		//for(Posting i : cla) System.out.println(i.getDocumentId());
+		DiskPositionalIndex diskPosition = new DiskPositionalIndex(pathDisk);
         
         BooleanQueryParser queryParser = new BooleanQueryParser();
 
