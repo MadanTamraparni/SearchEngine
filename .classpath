@@ -7,4 +7,5 @@
 	<classpathentry kind="lib"
 		path="F:/Study/Fall/CECS529/Project/SearchEngine/lib/gson-2.8.5.jar" />
 	<classpathentry kind="output" path="bin" />
+	<classpathentry kind="lib" path="lib/mapdb-3.0.7.jar" />
 </classpath>
