@@ -1,7 +1,12 @@
 package edu.csulb;
 
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import cecs429.documents.DirectoryCorpus;
@@ -25,7 +30,7 @@ public class TermDocumentIndexerMain {
 	public static final String QUIT_STR = "q";
 	public static final String INDEX_STR = "index";
 	public static final String VOCAB_STR = "vocab";
-	
+
 	public static void main(String[] args)
 	{
 		// User input and check for file directory
@@ -43,13 +48,13 @@ public class TermDocumentIndexerMain {
         }
 		long timeStart = System.currentTimeMillis();
 		// Making document corpus
-		//DocumentCorpus corpus = DirectoryCorpus.loadJsonDirectory(new File(path).toPath(),".json");
-		
+
 		// Commented line below is to handle text file
 		DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(new File(path).toPath(), ".txt");
+		int corpusSize = corpus.getCorpusSize();
 
-		Index index = indexCorpus(corpus);
-		
+		Index index = indexCorpus(corpus, pathDisk);
+
 		while(true){
 			System.out.print("Enter bin save path: ");
 			pathDisk = in.nextLine();
@@ -66,7 +71,7 @@ public class TermDocumentIndexerMain {
 		List<Posting> cla = index.getPostings("a");
 		//for(Posting i : cla) System.out.println(i.getDocumentId());
 		DiskPositionalIndex diskPosition = new DiskPositionalIndex(pathDisk);
-        
+
         BooleanQueryParser queryParser = new BooleanQueryParser();
 
 		long timeEnd = System.currentTimeMillis();
@@ -99,7 +104,7 @@ public class TermDocumentIndexerMain {
     				timeStart = System.currentTimeMillis();
         			corpus = DirectoryCorpus.loadJsonDirectory(new File(query).toPath(),".json");
 
-        			index = indexCorpus(corpus) ;
+        			index = indexCorpus(corpus, pathDisk) ;
         			timeEnd = System.currentTimeMillis();
         			timeConvert(timeEnd - timeStart);
     			}else{
@@ -121,11 +126,11 @@ public class TermDocumentIndexerMain {
             QueryComponent queryComponent = queryParser.parseQuery(query);
             TokenProcessor processor = new BasicTokenProcessor();
             List<Posting> postingList = queryComponent.getPostings(index, processor);
-            
+
             for (Posting p : postingList) {
 				System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
             }
-            System.out.println("Posting List size = " + postingList.size()); 
+            System.out.println("Posting List size = " + postingList.size());
         }
         in.close();
 	}
@@ -135,35 +140,83 @@ public class TermDocumentIndexerMain {
 		int min = (int)(seconds/60.0), intSecond = (int)(seconds%60);
 		System.out.println(min + " minute/s " + intSecond + " seconds.");
 	}
-	
-	private static Index indexCorpus(DocumentCorpus corpus) {
+
+	private static Index indexCorpus(DocumentCorpus corpus, String path){
 		//HashSet<String> vocabulary = new HashSet<>();
 		BasicTokenProcessor processor = new BasicTokenProcessor();
-		
+
 		// Get all the documents in the corpus by calling GetDocuments().
 		// Iterate through the documents, and:
 		// Tokenize the document's content by constructing an EnglishTokenStream around the document's content.
 		// Iterate through the tokens in the document, processing them using a BasicTokenProcessor,
 		//		and adding them to the HashSet vocabulary.
-		
+
 		PositionalInvertedIndex index = new PositionalInvertedIndex();
 		Iterable<Document> it = corpus.getDocuments();
-		
-		for(Document doc : it) {
-			EnglishTokenStream eng = new EnglishTokenStream(doc.getContent());
-			Iterable<String> strIter = eng.getTokens();
-			int currentPosition = -1;
-			int docId = doc.getId();
-			for(String token : strIter)
-			{
-				List<String> tokenList = processor.enhancedProcessToken(token);
-				for(String newToken:tokenList)
+		File docWeightsFile = new File(path + "/docWeights.bin");
+
+		try {
+			FileOutputStream docWeightsFos = new FileOutputStream(docWeightsFile);
+			DataOutputStream docWeightsDos = new DataOutputStream(docWeightsFos);
+			double weight;
+			long docLengthAvg = 0;
+			
+			for(Document doc : it){
+				HashMap<String, Double> wdt = new HashMap<String,Double>();
+				double docWeights = 0;
+				long docLength = 0; 
+				long docByte = 0; //needs implementation
+				double avgTftd = 0;
+				int currentPosition = -1;
+				int docId = doc.getId();
+				EnglishTokenStream eng = new EnglishTokenStream(doc.getContent());
+				Iterable<String> strIter = eng.getTokens();
+				
+				
+				for(String token : strIter)
 				{
-					currentPosition++;
-					index.addTerm(newToken, docId, currentPosition);
+					docLength++;
+					List<String> tokenList = processor.enhancedProcessToken(token);
+					for(String newToken:tokenList)
+					{
+						currentPosition++;
+						index.addTerm(newToken, docId, currentPosition);
+
+						if(wdt.containsKey(newToken)){
+							wdt.put(newToken,wdt.get(newToken) + 1);
+						}else {
+							wdt.put(newToken, 1.0);
+						}
+					}
 				}
+
+
+				for(Map.Entry<String,Double> entry:wdt.entrySet()){
+					avgTftd += entry.getValue();
+					weight = 1 + Math.log(entry.getValue());
+					entry.setValue(weight);
+					docWeights += Math.pow(weight, 2.0);
+				}
+				
+				avgTftd = avgTftd/wdt.size();
+				docWeights = Math.sqrt(docWeights);
+				
+				docWeightsDos.writeDouble(docWeights);//docID * 32 
+				docWeightsDos.writeLong(docLength);//(docID * 32) + 8
+				docWeightsDos.writeLong(docByte);//(docID * 32) + 16
+				docWeightsDos.writeDouble(avgTftd);//(docID * 32) + 24
+				
+				
+				docLengthAvg += docLength;
 			}
+			docLengthAvg = docLengthAvg/corpus.getCorpusSize();
+			docWeightsDos.writeLong(docLengthAvg);//Last 8 bytes
+			docWeightsDos.close();
+
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
+
 		return index;
 	}
 }
