@@ -7,5 +7,12 @@
 	<classpathentry kind="lib"
 		path="/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Documentations/CECS_429/Homework3/lib/gson-2.8.5.jar" />
 	<classpathentry kind="lib" path="/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/lib/mapdb-3.0.7.jar" />
+	<classpathentry kind="lib" path="/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/lib/eclipse-collections-10.0.0.jar" />
+	<classpathentry kind="lib" path="/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/lib/eclipse-collections-api-10.0.0.jar" />
+	<classpathentry kind="lib" path="/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/lib/eclipse-collections-forkjoin-10.0.0.jar" />
+	<classpathentry kind="lib" path="/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/lib/elsa-3.0.0-M5.jar" />
+	<classpathentry kind="lib" path="/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/lib/guava-28.1-jre.jar" />
+	<classpathentry kind="lib" path="/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/lib/kotlin-stdlib-1.3.50.jar" />
+	<classpathentry kind="lib" path="/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/lib/lz4-1.3.0.jar" />
 
 </classpath>

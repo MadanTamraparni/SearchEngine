@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 import org.mapdb.*;
 
@@ -14,20 +15,15 @@ public class DiskPositionalIndex implements Index{
 	private RandomAccessFile mVocabList;
 	private RandomAccessFile mPostingList;
 	private long[] mVocabTable;
-	private BTreeMap<Long,Long> bPlus;
+	private BTreeMap<String,Long> bPlus;
 
 	public DiskPositionalIndex(String path){
-		try{
-			mVocabList = new RandomAccessFile(new File(path, "vocab.bin"), "r");
-			mPostingList = new RandomAccessFile(new File(path, "postings.bin"), "r");
-			mVocabTable = readVocabTable(path);
-			makeBMap();
-
-			
-		}
-		catch(IOException e){
-			e.printStackTrace();
-		}
+		DB db = DBMaker.fileDB(path + "/bPlus.db").make();
+		bPlus = db.treeMap("map")
+			.keySerializer(Serializer.STRING)
+			.valueSerializer(Serializer.LONG)
+			.counterEnable()
+			.open();
 	}
 
 	@Override
@@ -39,31 +35,9 @@ public class DiskPositionalIndex implements Index{
 	@Override
 	public List<String> getVocabulary() {
 		// TODO Auto-generated method stub
-		return null;
+		return new ArrayList<String>(bPlus.keySet());
 	}
 
-	private void makeBMap(){
-		DB db = DBMaker.memoryDB().make();
-		bPlus = db.treeMap("map")
-			.keySerializer(Serializer.LONG)
-			.valueSerializer(Serializer.LONG)
-			.counterEnable()
-			.createOrOpen();
-		int i;
-		for(i = 0; i + 2 < mVocabTable.length;){
-			try{
-				long currentVocabLoc = mVocabTable[i];
-				int termLength = (int)mVocabTable[i + 2] - (int)currentVocabLoc;
-
-				mVocabList.seek(currentVocabLoc);
-				System.out.println("term length: " + termLength);
-				byte[] buffer = new byte[termLength];
-				mVocabList.read(buffer, 0, termLength);
-				String fileTerm = new String(buffer, "ASCII");
-				System.out.println(fileTerm);
-			} catch(IOException e){ e.printStackTrace(); }
-		}
-	}
 
 	// Locates the byte position of the postings for the given term.
 	// For example, binarySearchVocabulary("angel") will return the byte position

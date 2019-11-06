@@ -9,10 +9,12 @@ import java.io.RandomAccessFile;
 import java.util.List;
 import java.util.Scanner;
 import java.nio.charset.StandardCharsets;
+import org.mapdb.*;
 
 public class DiskIndexWriter {
     // this is hard code for testing
     //private String path = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
+    private BTreeMap<String,Long> bPlus;
 	
     public void WriteIndex(Index index, String path){
         int vocabOffset = 0;
@@ -25,6 +27,7 @@ public class DiskIndexWriter {
         File postingFile = new File(path + "/postings.bin");
         checkFileExist(postingFile);
         File docWeightsFile = new File(path + "/docWeights.bin");
+        checkFileExist(docWeightsFile);
         RandomAccessFile docWeightsRaf = null;
         try {
 			docWeightsRaf = new RandomAccessFile(docWeightsFile, "r");
@@ -40,9 +43,18 @@ public class DiskIndexWriter {
             DataOutputStream tableStream = new DataOutputStream(tableFos);
             List<String> vocabList = index.getVocabulary();
             String term;
+
+            DB db = DBMaker.fileDB(path + "/bPlus.db").make();
+		    bPlus = db.treeMap("map")
+			    .keySerializer(Serializer.STRING)
+			    .valueSerializer(Serializer.LONG)
+			    .counterEnable()
+			    .createOrOpen();
             for(int i = 0; i < vocabList.size(); i++){
-            	term = vocabList.get(i);
-            	
+                term = vocabList.get(i);
+                System.out.println("before convert:" + postingOffset);
+                System.out.println("after conver: " + (long)postingOffset);
+            	bPlus.put(term, (long)postingOffset);
                 // there is a empty space register as a vocab i need to increment to avoid wrong
                 vocabTable(vocabOffset, postingOffset, tableStream);
                 
@@ -62,6 +74,7 @@ public class DiskIndexWriter {
             tableFos.close();
             postingFos.close();
             tableStream.close();
+            db.close();
             
         } catch(IOException e){
             e.printStackTrace();
