@@ -54,6 +54,7 @@ public class TermDocumentIndexerMain {
 		// Commented line below is to handle text file
 		DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(new File(path).toPath(), ".txt");
 		int corpusSize = corpus.getCorpusSize();
+		
 		pathDisk = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
 		Index index = indexCorpus(corpus, pathDisk);
 
@@ -67,13 +68,13 @@ public class TermDocumentIndexerMain {
             }
             System.out.println("Directory does not exist. ");
 		}
-
+		
 		DiskIndexWriter indexDisk = new DiskIndexWriter();
 		pathDisk = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
 		indexDisk.WriteIndex(index, pathDisk);
 		DiskPositionalIndex diskPosition = new DiskPositionalIndex(pathDisk);
 		for(String i : diskPosition.getVocabulary()) System.out.println(i);
-
+		
         BooleanQueryParser queryParser = new BooleanQueryParser();
 
 		long timeEnd = System.currentTimeMillis();
@@ -167,7 +168,7 @@ public class TermDocumentIndexerMain {
 				HashMap<String, Double> wdt = new HashMap<String,Double>();
 				double docWeights = 0;
 				long docLength = 0; 
-				long docByte = 0; //needs implementation
+				long docByte = doc.getByte();
 				double avgTftd = 0;
 				int currentPosition = -1;
 				int docId = doc.getId();
@@ -207,7 +208,6 @@ public class TermDocumentIndexerMain {
 				docWeightsDos.writeLong(docLength);//(docID * 32) + 8
 				docWeightsDos.writeLong(docByte);//(docID * 32) + 16
 				docWeightsDos.writeDouble(avgTftd);//(docID * 32) + 24
-				
 				
 				docLengthAvg += docLength;
 			}
