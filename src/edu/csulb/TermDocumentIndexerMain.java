@@ -24,6 +24,8 @@ import cecs429.text.EnglishTokenStream;
 import cecs429.text.PorterStemmer;
 import cecs429.text.TokenProcessor;
 
+import org.mapdb.*;
+
 public class TermDocumentIndexerMain {
 
 	public static final String STEM_STR = "stem";
@@ -52,7 +54,7 @@ public class TermDocumentIndexerMain {
 		// Commented line below is to handle text file
 		DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(new File(path).toPath(), ".txt");
 		int corpusSize = corpus.getCorpusSize();
-
+		pathDisk = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
 		Index index = indexCorpus(corpus, pathDisk);
 
 		while(true){
@@ -65,12 +67,12 @@ public class TermDocumentIndexerMain {
             }
             System.out.println("Directory does not exist. ");
 		}
-		pathDisk = "F:\\Study\\Fall\\CECS529\\Project\\SearchEngine\\src\\indexBin";
+
 		DiskIndexWriter indexDisk = new DiskIndexWriter();
+		pathDisk = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
 		indexDisk.WriteIndex(index, pathDisk);
-		List<Posting> cla = index.getPostings("a");
-		//for(Posting i : cla) System.out.println(i.getDocumentId());
 		DiskPositionalIndex diskPosition = new DiskPositionalIndex(pathDisk);
+		for(String i : diskPosition.getVocabulary()) System.out.println(i);
 
         BooleanQueryParser queryParser = new BooleanQueryParser();
 
