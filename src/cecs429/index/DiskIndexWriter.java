@@ -14,9 +14,9 @@ import org.mapdb.*;
 public class DiskIndexWriter {
     // this is hard code for testing
     //private String path = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
-    private BTreeMap<String,Long> bPlus;
+	private BTreeMap<String,Long> bPlus;
 	
-    public void WriteIndex(Index index, String path, int indexCounter){
+    public void WriteIndex(Index index, String path){
         int vocabOffset = 0;
         int postingOffset = 0;
         // Creating file
@@ -42,18 +42,21 @@ public class DiskIndexWriter {
             DataOutputStream tableStream = new DataOutputStream(tableFos);
             List<String> vocabList = index.getVocabulary();
             String term;
-
+            
             DB db = DBMaker.fileDB(path + "/bPlus.db").make();
-		    bPlus = db.treeMap("map")
-			    .keySerializer(Serializer.STRING)
-			    .valueSerializer(Serializer.LONG)
-			    .counterEnable()
-			    .createOrOpen();
+ 		    bPlus = db.treeMap("map")
+ 			    .keySerializer(Serializer.STRING)
+ 			    .valueSerializer(Serializer.LONG)
+ 			    .counterEnable()
+ 			    .createOrOpen();
+            
             for(int i = 0; i < vocabList.size(); i++){
-                term = vocabList.get(i);
+            	
+            	term = vocabList.get(i);
                 System.out.println("before convert:" + postingOffset);
                 System.out.println("after conver: " + (long)postingOffset);
             	bPlus.put(term, (long)postingOffset);
+            	
                 // there is a empty space register as a vocab i need to increment to avoid wrong
                 vocabTable(vocabOffset, postingOffset, tableStream);
                 
@@ -135,12 +138,11 @@ public class DiskIndexWriter {
 				
 				binFile.writeInt(doc.getDocumentId());//write docID
 				binFile.writeDouble(1+Math.log(tftd));//write default wdt
-				binFile.writeDouble(tftd);//write tf-idf wdt
 				binFile.writeDouble((2.2 * tftd) / (1.2 * (0.25 + 0.75 * (docLength / docLengthAvg) + tftd)));//write BM25 wdt
 				binFile.writeDouble((1+Math.log(tftd))/(1+Math.log(avgTftd)));//write Wacky wdt
 				binFile.writeInt(tftd);//write tftd
 				binFile.writeInt(positions.get(0));//write position 1
-				position += 44;
+				position += 36;
 				
 				if(positions.size() > 1) {
 					for(int j = 1; j < positions.size(); j++){
