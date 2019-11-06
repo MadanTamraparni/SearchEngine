@@ -14,15 +14,14 @@ public class DiskIndexWriter {
     // this is hard code for testing
     //private String path = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
 	
-    public void WriteIndex(Index index, String path){
+    public void WriteIndex(Index index, String path, int indexCounter){
         int vocabOffset = 0;
         int postingOffset = 0;
         // Creating file
         File vocabFile = new File(path + "/vocab.bin");
-        checkFileExist(vocabFile);
         File tableFile = new File(path + "/vocabTable.bin");
         checkFileExist(tableFile);
-        File postingFile = new File(path + "/postings.bin");
+        File postingFile = new File(path + "/postings"  + Integer.toString(indexCounter) +  ".bin");
         checkFileExist(postingFile);
         File docWeightsFile = new File(path + "/docWeights.bin");
         RandomAccessFile docWeightsRaf = null;

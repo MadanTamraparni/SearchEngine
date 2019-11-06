@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 import org.mapdb.*;
 
@@ -21,6 +22,7 @@ public class DiskPositionalIndex implements Index{
 			mVocabList = new RandomAccessFile(new File(path, "vocab.bin"), "r");
 			mPostingList = new RandomAccessFile(new File(path, "postings.bin"), "r");
 			mVocabTable = readVocabTable(path);
+
 			makeBMap();
 
 			
@@ -33,7 +35,39 @@ public class DiskPositionalIndex implements Index{
 	@Override
 	public List<Posting> getPostings(String term) {
 		// TODO Auto-generated method stub
-		return null;
+		List<Posting> postings = new ArrayList<Posting>();
+		long position = binarySearchVocabulary(term);
+		byte[] byteBuffer = new byte[4];
+		try 
+		{
+			mPostingList.read(byteBuffer, (int) position, 4);
+			long numOfDocs = ByteBuffer.wrap(byteBuffer).getLong();
+			position += 4;
+			for(int i=0; i < numOfDocs; i++)
+			{
+				mPostingList.read(byteBuffer, (int) position, 4);
+				Posting posting = new Posting(ByteBuffer.wrap(byteBuffer).getInt());
+				position += 4;  
+				for(int x = 0; x < 3; x++)
+				{
+					mPostingList.read(byteBuffer, (int) position, 8);
+					posting.addWdt(ByteBuffer.wrap(byteBuffer).getDouble());
+				}
+				long numOfPos = mPostingList.read(byteBuffer, (int) position, 4);
+				for(int j=0; j < numOfPos; j++)
+				{
+					position += 4;
+					mPostingList.read(byteBuffer, (int) position, 4);
+					posting.addPosition(ByteBuffer.wrap(byteBuffer).getInt());
+				}
+				postings.add(posting);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		// TODO Auto-generated method stub
+		return postings;
 	}
 
 	@Override
@@ -41,6 +75,33 @@ public class DiskPositionalIndex implements Index{
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	@Override
+	public List<Posting> getPostingsWithPositions(String term) {
+		List<Posting> postings = new ArrayList<Posting>();
+		long position = binarySearchVocabulary(term);
+		byte[] byteBuffer = new byte[4];
+		try {
+			mPostingList.read(byteBuffer, (int) position, 4);
+			long numOfDocs = ByteBuffer.wrap(byteBuffer).getLong();
+			position += 4;
+			for(int i=0; i < numOfDocs; i++)
+			{
+				mPostingList.read(byteBuffer, (int) position, 4);
+				postings.add(new Posting(ByteBuffer.wrap(byteBuffer).getInt()));
+				position += 4;  
+				long numOfPos = mPostingList.read(byteBuffer, (int) position, 4);
+				position += numOfPos;
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// TODO Auto-generated method stub
+		return postings;
+	}
+	
 
 	private void makeBMap(){
 		DB db = DBMaker.memoryDB().make();
@@ -135,10 +196,11 @@ public class DiskPositionalIndex implements Index{
           "r");
          byte[] byteBuffer = new byte[4];
          tableFile.read(byteBuffer, 0, byteBuffer.length);
-        
+
 		 int tableIndex = 0;
 		 // tableFile size / 16 to get numberOfTerm
 		 System.out.println("table size: " + tableFile.length());
+		 vocabTable = new long[ByteBuffer.wrap(byteBuffer).getInt() * 2];
          vocabTable = new long[((int)tableFile.length()/16) * 2];
 		 byteBuffer = new byte[8];
          while (tableFile.read(byteBuffer, 0, byteBuffer.length) > 0) { 
@@ -157,5 +219,6 @@ public class DiskPositionalIndex implements Index{
       }
       return null;
    }
+
 
 }

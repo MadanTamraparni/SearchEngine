@@ -65,7 +65,7 @@ public class TermDocumentIndexerMain {
             }
             System.out.println("Directory does not exist. ");
 		}
-		pathDisk = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
+		pathDisk = "F:\\Study\\Fall\\CECS529\\Project\\SearchEngine\\src\\indexBin";
 		DiskIndexWriter indexDisk = new DiskIndexWriter();
 		indexDisk.WriteIndex(index, pathDisk);
 		List<Posting> cla = index.getPostings("a");

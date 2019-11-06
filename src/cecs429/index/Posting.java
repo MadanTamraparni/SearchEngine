@@ -9,9 +9,10 @@ import java.util.List;
 public class Posting {
 	private int mDocumentId;
 	private List<Integer> mPositions;
+	private List<Double> mWdt;
 	
-	public Posting(int documentId) {
-		
+	public Posting(int documentId)
+	{
 		mDocumentId = documentId;
 		mPositions = new ArrayList<Integer>();
 	}
@@ -35,5 +36,15 @@ public class Posting {
 	public boolean equals(Object p)
 	{
 		return (this.mDocumentId == ((Posting)p).mDocumentId);
+	}
+	
+	public double getWdt(int scoreType)
+	{
+		return mWdt.get(scoreType);
+	}
+	
+	public void addWdt(double wdt)
+	{
+		mWdt.add(wdt);
 	}
 }

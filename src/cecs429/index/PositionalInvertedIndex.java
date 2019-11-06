@@ -69,4 +69,10 @@ public class PositionalInvertedIndex implements Index {
 			mVocabulary.add(term);
 		}
 	}
+
+	@Override
+	public List<Posting> getPostingsWithPositions(String term) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
