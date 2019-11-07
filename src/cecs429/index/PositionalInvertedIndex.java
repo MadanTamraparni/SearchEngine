@@ -13,6 +13,7 @@ public class PositionalInvertedIndex implements Index {
 	private HashMap<String, List<Posting>> mPostingMap;
 	private HashSet<String> mVocabulary;
 	
+
 	public PositionalInvertedIndex()
 	{
 		mPostingMap = new HashMap<String, List<Posting>>();
@@ -73,6 +74,24 @@ public class PositionalInvertedIndex implements Index {
 	@Override
 	public List<Posting> getPostingsWithPositions(String term) {
 		// TODO Auto-generated method stub
-		return null;
+		List<Posting> postings = new LinkedList<Posting>();
+		if(mPostingMap.containsKey(term))
+		{
+			postings = mPostingMap.get(term);
+		}
+		return postings;
 	}
+
+	@Override
+	public long getByte() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getIndexSize() {
+		// TODO Auto-generated method stub
+		return mPostingMap.size();
+	}
+		
 }

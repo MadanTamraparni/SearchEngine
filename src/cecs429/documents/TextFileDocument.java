@@ -54,8 +54,10 @@ public class TextFileDocument implements FileDocument {
 
 	@Override
 	public long getByte() {
+
 		File doc = new File(mFilePath.toString());
 		long size = doc.length();
 		return size;
 	}
+
 }

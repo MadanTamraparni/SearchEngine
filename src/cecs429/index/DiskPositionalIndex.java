@@ -15,37 +15,53 @@ public class DiskPositionalIndex implements Index{
 	private RandomAccessFile mVocabList;
 	private RandomAccessFile mPostingList;
 	private long[] mVocabTable;
-	private BTreeMap<String,Long> bPlus;
+	private BTreeMap<String,Long> mBPlus;
 
 	public DiskPositionalIndex(String path){
 
 		DB db = DBMaker.fileDB(path + "/bPlus.db").make();
+<<<<<<< HEAD
 		bPlus = db.treeMap("map")
+=======
+		mBPlus = db.treeMap("map")
+>>>>>>> 66a7f082b643120b31e9f75141def134c8d9048a
 			.keySerializer(Serializer.STRING)
 			.valueSerializer(Serializer.LONG)
 			.counterEnable()
 			.open();
-
+		
+		try {
+			mPostingList = new RandomAccessFile(path + "/postings.bin", "r");
+			mVocabList = new RandomAccessFile(path + "/vocab.bin", "r");
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 	@Override
 	public List<Posting> getPostings(String term) {
 		// TODO Auto-generated method stub
 		List<Posting> postings = new ArrayList<Posting>();
-		long position = bPlus.get(term);
+
+		long position = mBPlus.get(term);
 		byte[] byteBuffer = new byte[4];
 		try 
 		{
+			mPostingList.seek(position);
 			mPostingList.read(byteBuffer, (int) position, 4);
 			long numOfDocs = ByteBuffer.wrap(byteBuffer).getLong();
 			position += 4;
 			for(int i=0; i < numOfDocs; i++)
 			{
+				mPostingList.seek(position);
 				mPostingList.read(byteBuffer, (int) position, 4);
 				Posting posting = new Posting(ByteBuffer.wrap(byteBuffer).getInt());
 				position += 4;  
 				for(int x = 0; x < 3; x++)
 				{
+					mPostingList.seek(position);
 					mPostingList.read(byteBuffer, (int) position, 8);
 					posting.addWdt(ByteBuffer.wrap(byteBuffer).getDouble());
 				}
@@ -53,6 +69,7 @@ public class DiskPositionalIndex implements Index{
 				for(int j=0; j < numOfPos; j++)
 				{
 					position += 4;
+					mPostingList.seek(position);
 					mPostingList.read(byteBuffer, (int) position, 4);
 					posting.addPosition(ByteBuffer.wrap(byteBuffer).getInt());
 				}
@@ -69,25 +86,44 @@ public class DiskPositionalIndex implements Index{
 	@Override
 	public List<String> getVocabulary() {
 		// TODO Auto-generated method stub
-		return new ArrayList<String>(bPlus.keySet());
+		return new ArrayList<String>(mBPlus.keySet());
 	}
 	
 	@Override
 	public List<Posting> getPostingsWithPositions(String term) {
 		List<Posting> postings = new ArrayList<Posting>();
-		long position = binarySearchVocabulary(term);
+		long position = mBPlus.get(term);
 		byte[] byteBuffer = new byte[4];
 		try {
+			mPostingList.seek(position);
 			mPostingList.read(byteBuffer, (int) position, 4);
 			long numOfDocs = ByteBuffer.wrap(byteBuffer).getLong();
 			position += 4;
+			mPostingList.seek(position);
+			mPostingList.read(byteBuffer, (int) position, 4);
+			Posting posting = new Posting(ByteBuffer.wrap(byteBuffer).getInt());
+			position += 4;
+			for(int x = 0; x < 3; x++)
+			{
+				mPostingList.seek(position);
+				mPostingList.read(byteBuffer, (int) position, 8);
+				posting.addWdt(ByteBuffer.wrap(byteBuffer).getDouble());
+				position += 8;
+			}
 			for(int i=0; i < numOfDocs; i++)
 			{
-				mPostingList.read(byteBuffer, (int) position, 4);
-				postings.add(new Posting(ByteBuffer.wrap(byteBuffer).getInt()));
 				position += 4;  
+				mPostingList.seek(position);
 				long numOfPos = mPostingList.read(byteBuffer, (int) position, 4);
-				position += numOfPos;
+				position += 4;
+				for(int j=0; j < numOfPos; j++)
+				{
+					mPostingList.seek(position);
+					int pos = mPostingList.read(byteBuffer, (int) position, 4);
+					posting.addPosition(pos);
+					position += 4;
+				}
+				postings.add(posting);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -98,7 +134,30 @@ public class DiskPositionalIndex implements Index{
 		return postings;
 	}
 	
-
+	public long getPostingOffset(String term)
+	{
+		long position = mBPlus.get(term);
+		byte[] byteBuffer = new byte[4];
+		try {
+			mPostingList.seek(position);
+			mPostingList.read(byteBuffer, (int)position, 4);
+			long numOfDocs = ByteBuffer.wrap(byteBuffer).getLong();
+			position += 4;  //
+			position += 24; //scores
+			for(int i=0; i < numOfDocs; i++)
+			{
+				position += 4; 
+				mPostingList.seek(position);
+				long numOfPos = mPostingList.read(byteBuffer, (int) position, 4);
+				position += 4;
+				position += 4*numOfPos; //positions
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return position;
+	}
 
 	// Locates the byte position of the postings for the given term.
 	// For example, binarySearchVocabulary("angel") will return the byte position
@@ -193,6 +252,18 @@ public class DiskPositionalIndex implements Index{
       }
       return null;
    }
+
+@Override
+public long getByte() {
+	// TODO Auto-generated method stub
+	return 0;
+}
+
+@Override
+public int getIndexSize() {
+	// TODO Auto-generated method stub
+	return 0;
+}
 
 
 }

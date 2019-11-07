@@ -14,17 +14,21 @@ import org.mapdb.*;
 public class DiskIndexWriter {
     // this is hard code for testing
     //private String path = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
-	private BTreeMap<String,Long> bPlus;
+	private static BTreeMap<String,Long> mBPlus;
 	
-    public void WriteIndex(Index index, String path){
+    public void WriteIndex(Index index, String path, String postingFileName){
         int vocabOffset = 0;
         int postingOffset = 0;
         // Creating file
         File vocabFile = new File(path + "/vocab.bin");
         File tableFile = new File(path + "/vocabTable.bin");
         checkFileExist(tableFile);
+<<<<<<< HEAD
         //File postingFile = new File(path + "/postings"  + Integer.toString(indexCounter) +  ".bin");
         File postingFile = new File(path + "/postings.bin");
+=======
+        File postingFile = new File(path + "/" + postingFileName);
+>>>>>>> 66a7f082b643120b31e9f75141def134c8d9048a
         checkFileExist(postingFile);
         File docWeightsFile = new File(path + "/docWeights.bin");
         checkFileExist(docWeightsFile);
@@ -45,7 +49,7 @@ public class DiskIndexWriter {
             String term;
             
             DB db = DBMaker.fileDB(path + "/bPlus.db").make();
- 		    bPlus = db.treeMap("map")
+ 		    mBPlus = db.treeMap("map")
  			    .keySerializer(Serializer.STRING)
  			    .valueSerializer(Serializer.LONG)
  			    .counterEnable()
@@ -59,7 +63,7 @@ public class DiskIndexWriter {
             	term = vocabList.get(i);
                 System.out.println("before convert:" + postingOffset);
                 System.out.println("after conver: " + (long)postingOffset);
-            	bPlus.put(term, (long)postingOffset);
+            	mBPlus.put(term, (long)postingOffset);
             	
                 // there is a empty space register as a vocab i need to increment to avoid wrong
                 vocabTable(vocabOffset, postingOffset, tableStream);

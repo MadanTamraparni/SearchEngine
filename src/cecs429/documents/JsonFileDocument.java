@@ -72,6 +72,7 @@ public class JsonFileDocument implements FileDocument {
 
 	@Override
 	public long getByte() {
+
 		File doc = new File(filePath.toString());
 		long size = doc.length();
 		return size;
