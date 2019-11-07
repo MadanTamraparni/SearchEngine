@@ -13,30 +13,6 @@ import cecs429.index.Posting;
 
 public class RankedRetrieval {
 	
-	public static void main(String[] args) {
-		HashMap<Integer,Double> Ad = new HashMap<Integer,Double>();
-		Ad.put(0, 15.2);
-		Ad.put(1, 2.3);
-		Ad.put(2, 19.2);
-		Ad.put(3, 7.8);
-		Ad.put(4, 26.2);
-		Ad.put(5, 2.3);
-		Ad.put(6, 1.1);
-		
-		PriorityQueue<Map.Entry<Integer,Double>> pQueue = new PriorityQueue<Map.Entry<Integer,Double>>(new scoreComparator());
-		for(Map.Entry<Integer,Double> entry: Ad.entrySet()) {
-			pQueue.add(entry);
-		}
-		System.out.println(pQueue.poll().toString());
-		System.out.println(pQueue.poll().toString());
-		System.out.println(pQueue.poll().toString());
-		System.out.println(pQueue.poll().toString());
-		System.out.println(pQueue.poll().toString());
-		System.out.println(pQueue.poll().toString());
-		System.out.println(pQueue.poll().toString());
-		
-	}
-	
 	public List<Posting>getResults(RankModel rankModel, String query, int k) throws IOException{
 		HashMap<Integer,Double> Ad = rankModel.rank(query);
 		List<Posting> results = new ArrayList<Posting>();
