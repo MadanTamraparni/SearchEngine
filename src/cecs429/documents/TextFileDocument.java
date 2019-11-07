@@ -54,7 +54,7 @@ public class TextFileDocument implements FileDocument {
 
 	@Override
 	public long getByte() {
-		// TODO Auto-generated method stub
+
 		File doc = new File(mFilePath.toString());
 		long size = doc.length();
 		return size;

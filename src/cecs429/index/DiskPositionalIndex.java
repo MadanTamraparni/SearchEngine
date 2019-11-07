@@ -40,6 +40,7 @@ public class DiskPositionalIndex implements Index{
 	public List<Posting> getPostings(String term) {
 		// TODO Auto-generated method stub
 		List<Posting> postings = new ArrayList<Posting>();
+
 		long position = mBPlus.get(term);
 		byte[] byteBuffer = new byte[4];
 		try 
