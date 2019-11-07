@@ -19,7 +19,7 @@ public class DiskPositionalIndex implements Index{
 
 	public DiskPositionalIndex(String path){
 
-		DB db = DBMaker.fileDB(path + "/bPlus.db").make();
+		DB db = DBMaker.fileDB(path + "/bPlus.db").make()
 		bPlus = db.treeMap("map")
 			.keySerializer(Serializer.STRING)
 			.valueSerializer(Serializer.LONG)
@@ -32,7 +32,7 @@ public class DiskPositionalIndex implements Index{
 	public List<Posting> getPostings(String term) {
 		// TODO Auto-generated method stub
 		List<Posting> postings = new ArrayList<Posting>();
-		long position = binarySearchVocabulary(term);
+		long position = bPlus.get(term);
 		byte[] byteBuffer = new byte[4];
 		try 
 		{
