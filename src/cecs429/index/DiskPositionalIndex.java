@@ -19,7 +19,7 @@ public class DiskPositionalIndex implements Index{
 
 	public DiskPositionalIndex(String path){
 
-		DB db = DBMaker.fileDB(path + "/bPlus.db").make()
+		DB db = DBMaker.fileDB(path + "/bPlus.db").make();
 		bPlus = db.treeMap("map")
 			.keySerializer(Serializer.STRING)
 			.valueSerializer(Serializer.LONG)

@@ -23,7 +23,8 @@ public class DiskIndexWriter {
         File vocabFile = new File(path + "/vocab.bin");
         File tableFile = new File(path + "/vocabTable.bin");
         checkFileExist(tableFile);
-        File postingFile = new File(path + "/postings"  + Integer.toString(indexCounter) +  ".bin");
+        //File postingFile = new File(path + "/postings"  + Integer.toString(indexCounter) +  ".bin");
+        File postingFile = new File(path + "/postings.bin");
         checkFileExist(postingFile);
         File docWeightsFile = new File(path + "/docWeights.bin");
         checkFileExist(docWeightsFile);
@@ -48,7 +49,10 @@ public class DiskIndexWriter {
  			    .keySerializer(Serializer.STRING)
  			    .valueSerializer(Serializer.LONG)
  			    .counterEnable()
- 			    .createOrOpen();
+                 .createOrOpen();
+            bPlus.put(, (long)postingOffset);
+            bPlus.put(term, (long)postingOffset);
+            bPlus.put(term, (long)postingOffset);
             
             for(int i = 0; i < vocabList.size(); i++){
             	

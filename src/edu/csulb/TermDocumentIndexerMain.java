@@ -73,7 +73,7 @@ public class TermDocumentIndexerMain {
 		pathDisk = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
 		indexDisk.WriteIndex(index, pathDisk);
 		DiskPositionalIndex diskPosition = new DiskPositionalIndex(pathDisk);
-		for(String i : diskPosition.getVocabulary()) System.out.println(i);
+		
 		
         BooleanQueryParser queryParser = new BooleanQueryParser();
 
