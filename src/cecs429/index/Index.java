@@ -19,4 +19,8 @@ public interface Index {
 	
 	List<Posting> getPostingsWithPositions(String term);
 	
+	long getByte();
+	
+	int getIndexSize();
+	
 }

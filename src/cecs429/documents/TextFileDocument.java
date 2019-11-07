@@ -1,5 +1,6 @@
 package cecs429.documents;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -50,4 +51,13 @@ public class TextFileDocument implements FileDocument {
 	public static FileDocument loadTextFileDocument(Path absolutePath, int documentId) {
 		return new TextFileDocument(documentId, absolutePath);
 	}
+
+	@Override
+	public long getByte() {
+		// TODO Auto-generated method stub
+		File doc = new File(mFilePath.toString());
+		long size = doc.length();
+		return size;
+	}
+
 }
