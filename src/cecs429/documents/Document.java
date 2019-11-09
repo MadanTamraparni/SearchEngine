@@ -20,10 +20,6 @@ public interface Document {
 	 * The title of the document, for displaying to the user.
 	 */
 	String getTitle();
-<<<<<<< HEAD
-
-=======
 	
->>>>>>> 66a7f082b643120b31e9f75141def134c8d9048a
 	long getByte();
 }

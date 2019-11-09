@@ -33,7 +33,7 @@ public class TermDocumentIndexerMain {
 	public static final String QUIT_STR = "q";
 	public static final String INDEX_STR = "index";
 	public static final String VOCAB_STR = "vocab";
-	public static final int MAX_INDEX_SIZE = 10;
+	public static final int MAX_INDEX_SIZE = 1000000;
 
 	public static void main(String[] args)
 	{
@@ -54,10 +54,11 @@ public class TermDocumentIndexerMain {
 		// Making document corpus
 
 		// Commented line below is to handle text file
-		DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(new File(path).toPath(), ".json");
+		DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(new File(path).toPath(), ".txt");
 		int corpusSize = corpus.getCorpusSize();
 		
-		pathDisk = "F:\\Study\\Fall\\CECS529\\Project\\SearchEngine\\src\\indexBin";
+		//pathDisk = "F:\\Study\\Fall\\CECS529\\Project\\SearchEngine\\src\\indexBin";
+		pathDisk = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
 		Index index = indexCorpus(corpus, pathDisk);
 
 		while(true){
@@ -71,11 +72,12 @@ public class TermDocumentIndexerMain {
             System.out.println("Directory does not exist. ");
 		}
 		
-		//DiskIndexWriter indexDisk = new DiskIndexWriter();
+		DiskIndexWriter indexDisk = new DiskIndexWriter();
 		pathDisk = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
-//		indexDisk.WriteIndex(index, pathDisk);
-		//DiskPositionalIndex diskPosition = new DiskPositionalIndex(pathDisk);
+		indexDisk.WriteIndex(index, pathDisk, "posting.bin");
+		DiskPositionalIndex diskPosition = new DiskPositionalIndex(pathDisk);
 		//for(String i : diskPosition.getVocabulary()) System.out.println(i);
+		for(Posting i : index.getPostings("a")) System.out.println("doc:" + i.getDocumentId());
 		
         BooleanQueryParser queryParser = new BooleanQueryParser();
 
@@ -157,7 +159,7 @@ public class TermDocumentIndexerMain {
 		//		and adding them to the HashSet vocabulary.
 
 		PositionalInvertedIndex index = new PositionalInvertedIndex();
-		SpimiIndexWriter spimiIndexWriter = new SpimiIndexWriter(path);
+		//SpimiIndexWriter spimiIndexWriter = new SpimiIndexWriter(path);
 		Iterable<Document> it = corpus.getDocuments();
 		File docWeightsFile = new File(path + "/docWeights.bin");
 
@@ -190,8 +192,8 @@ public class TermDocumentIndexerMain {
 					
 						if(MAX_INDEX_SIZE == index.getIndexSize())
 						{
-							if(spimiIndexWriter.writePartialIndex(index))
-								index = new PositionalInvertedIndex();
+							//if(spimiIndexWriter.writePartialIndex(index))
+								//index = new PositionalInvertedIndex();
 						}
 						if(wdt.containsKey(newToken)){
 							wdt.put(newToken,wdt.get(newToken) + 1);
@@ -227,6 +229,7 @@ public class TermDocumentIndexerMain {
 			e.printStackTrace();
 		}
 		
-		return spimiIndexWriter.mergePartialIndex();
+		//return spimiIndexWriter.mergePartialIndex();
+		return index;
 	}
 }

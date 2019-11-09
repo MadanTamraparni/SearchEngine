@@ -23,12 +23,7 @@ public class DiskIndexWriter {
         File vocabFile = new File(path + "/vocab.bin");
         File tableFile = new File(path + "/vocabTable.bin");
         checkFileExist(tableFile);
-<<<<<<< HEAD
-        //File postingFile = new File(path + "/postings"  + Integer.toString(indexCounter) +  ".bin");
-        File postingFile = new File(path + "/postings.bin");
-=======
         File postingFile = new File(path + "/" + postingFileName);
->>>>>>> 66a7f082b643120b31e9f75141def134c8d9048a
         checkFileExist(postingFile);
         File docWeightsFile = new File(path + "/docWeights.bin");
         checkFileExist(docWeightsFile);
@@ -48,21 +43,20 @@ public class DiskIndexWriter {
             List<String> vocabList = index.getVocabulary();
             String term;
             
-            DB db = DBMaker.fileDB(path + "/bPlus.db").make();
+            DB db = DBMaker.fileDB(path + "/bPlus.db")
+                .closeOnJvmShutdown()
+                .transactionEnable()
+                .make();
  		    mBPlus = db.treeMap("map")
  			    .keySerializer(Serializer.STRING)
  			    .valueSerializer(Serializer.LONG)
  			    .counterEnable()
                  .createOrOpen();
-            bPlus.put(, (long)postingOffset);
-            bPlus.put(term, (long)postingOffset);
-            bPlus.put(term, (long)postingOffset);
-            
+
             for(int i = 0; i < vocabList.size(); i++){
             	
             	term = vocabList.get(i);
-                System.out.println("before convert:" + postingOffset);
-                System.out.println("after conver: " + (long)postingOffset);
+                //System.out.println("after conver: " + (long)postingOffset);
             	mBPlus.put(term, (long)postingOffset);
             	
                 // there is a empty space register as a vocab i need to increment to avoid wrong
@@ -105,7 +99,7 @@ public class DiskIndexWriter {
 
     private void vocabTable(long vocabPosition, long postingPosition, DataOutputStream tableStream){
         try{
-            //System.out.println("vocabPos: " + vocabPosition);
+            System.out.println("postingPos: " + postingPosition);
             tableStream.writeLong(vocabPosition);
             tableStream.writeLong(postingPosition);
         }catch(IOException e){
@@ -128,7 +122,8 @@ public class DiskIndexWriter {
 		long position = 0;
 		try {
 			List<Posting> postings = index.getPostings(term);
-			int docNum = postings.size();
+            int docNum = postings.size();
+            System.out.println("dft:" + docNum);
 			binFile.writeInt(docNum);//write dft
 			position += 4;
 			for(int i = 0; i < docNum; i++) {
@@ -160,9 +155,9 @@ public class DiskIndexWriter {
 				}
 			}
 		}catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
-		
+        //System.out.println("Position for next df: " + position);
 		return position;
 		
 	}

@@ -19,16 +19,15 @@ public class DiskPositionalIndex implements Index{
 
 	public DiskPositionalIndex(String path){
 
-		DB db = DBMaker.fileDB(path + "/bPlus.db").make();
-<<<<<<< HEAD
-		bPlus = db.treeMap("map")
-=======
+		DB db = DBMaker.fileDB(path + "/bPlus.db")
+			.closeOnJvmShutdown()
+			.transactionEnable()
+			.make();
 		mBPlus = db.treeMap("map")
->>>>>>> 66a7f082b643120b31e9f75141def134c8d9048a
 			.keySerializer(Serializer.STRING)
 			.valueSerializer(Serializer.LONG)
 			.counterEnable()
-			.open();
+			.createOrOpen();
 		
 		try {
 			mPostingList = new RandomAccessFile(path + "/postings.bin", "r");
