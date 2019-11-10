@@ -89,8 +89,6 @@ public class TermDocumentIndexerMain {
 
 		// NOTE: Declare but never use
 		DiskPositionalIndex diskPosition = new DiskPositionalIndex(mDiskWritePath);
-		// Sample print out for vocab "a"
-		for(Posting i : index.getPostings("a")) System.out.println("doc:" + i.getDocumentId());
 
         //BooleanQueryParser queryParser = new BooleanQueryParser();
 
@@ -149,7 +147,8 @@ public class TermDocumentIndexerMain {
 			// Query Selecting
 			// Selecting searching method
 			System.out.println("Select query method: ");
-			System.out.println("1. Ranked Retrieval		2. Boolean Retrieval");
+			System.out.println("1. Ranked Retrieval");
+			System.out.println("2. Boolean Retrieval");
 			while(true){
 				System.out.print("Enter query method (Use number as entry): ");
 				mSearchSelection = in.nextLine();
@@ -165,10 +164,9 @@ public class TermDocumentIndexerMain {
 							RandomAccessFile docWeightsRaf = new RandomAccessFile(new File(mDiskWritePath + "/docWeights.bin"), "r");
 
 							while(true){
-								System.out.println("Enter model (Use number as entry): ");
+								System.out.print("Enter model (Use number as entry): ");
 								mModelSelection = in.nextLine();
 								if(mModelSelection.equals("1")){
-									RankModel rankModel = new DefaultModel(index, corpusSize, docWeightsRaf);
 									postingList = rankedRetrieval.getResults(new DefaultModel(index, corpusSize, docWeightsRaf), query);
 									break;
 								} else if(mModelSelection.equals("2")){
