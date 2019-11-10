@@ -63,13 +63,12 @@ public class TermDocumentIndexerMain {
 		// Making document corpus
 
 		// Commented line below is to handle text file
-		DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(new File(mCorpusPath).toPath(), ".txt");
+		DocumentCorpus corpus = DirectoryCorpus.loadJsonDirectory(new File(mCorpusPath).toPath(), ".json");
 		int corpusSize = corpus.getCorpusSize();
 		
 		//pathDisk = "F:\\Study\\Fall\\CECS529\\Project\\SearchEngine\\src\\indexBin";
 		// Remove after testing
-		mDiskWritePath = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
-		Index index = indexCorpus(corpus, mDiskWritePath);
+		//mDiskWritePath = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
 
 		while(true){
 			System.out.print("Enter bin save path: ");
@@ -81,11 +80,12 @@ public class TermDocumentIndexerMain {
             }
             System.out.println("Directory does not exist. ");
 		}
+		Index index = indexCorpus(corpus, mDiskWritePath);
 		// where posting.bin, vocab.bin, and vocabTable.bin
 		// vocab.bin and vocabTable.bin will be comment out
 		DiskIndexWriter indexDisk = new DiskIndexWriter();
-		mDiskWritePath = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
-		indexDisk.WriteIndex(index, mDiskWritePath, "posting.bin");
+		//mDiskWritePath = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
+		indexDisk.WriteIndex(index, mDiskWritePath, "postings.bin");
 
 		// NOTE: Declare but never use
 		DiskPositionalIndex diskPosition = new DiskPositionalIndex(mDiskWritePath);
@@ -170,7 +170,7 @@ public class TermDocumentIndexerMain {
 									postingList = rankedRetrieval.getResults(new DefaultModel(index, corpusSize, docWeightsRaf), query);
 									break;
 								} else if(mModelSelection.equals("2")){
-									postingList = rankedRetrieval.getResults(new BM25Model(index, corpusSize, docWeightsRaf), query);
+									postingList = rankedRetrieval.getResults(new BM25Model(index, corpusSize), query);
 									break;
 								} else if(mModelSelection.equals("3")){
 									postingList = rankedRetrieval.getResults(new TfidfModel(index, corpusSize, docWeightsRaf), query);
@@ -229,7 +229,7 @@ public class TermDocumentIndexerMain {
 			FileOutputStream docWeightsFos = new FileOutputStream(docWeightsFile);
 			DataOutputStream docWeightsDos = new DataOutputStream(docWeightsFos);
 			double weight;
-			long docLengthAvg = 0;
+			double docLengthAvg = 0;
 			
 			for(Document doc : it){
 				HashMap<String, Double> wdt = new HashMap<String,Double>();
@@ -284,7 +284,7 @@ public class TermDocumentIndexerMain {
 				docLengthAvg += docLength;
 			}
 			docLengthAvg = docLengthAvg/corpus.getCorpusSize();
-			docWeightsDos.writeLong(docLengthAvg);//Last 8 bytes
+			docWeightsDos.writeDouble(docLengthAvg);//Last 8 bytes
 			docWeightsDos.close();
 
 		} catch (IOException e) {
