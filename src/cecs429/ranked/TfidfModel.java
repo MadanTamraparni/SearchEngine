@@ -28,7 +28,11 @@ public class TfidfModel implements RankModel {
 		for(String term: queryTerms){
 			
 			List<Posting> termResults = mIndex.getPostings(term);
-			double wqt = Math.log(mCorpusSize/termResults.size());
+			int dft = termResults.size();
+			if(dft == 0) {
+				continue;
+			}
+			double wqt = Math.log(mCorpusSize/(double)termResults.size());
 			
 			for(Posting posting: termResults){
 				int docId = posting.getDocumentId();

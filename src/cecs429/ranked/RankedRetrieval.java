@@ -22,10 +22,14 @@ public class RankedRetrieval {
 		for(Map.Entry<Integer,Double> entry: Ad.entrySet()) {
 			pQueue.add(entry);
 		}
+		int pQueueSize = pQueue.size();
+		
+		if(pQueueSize < k) {
+			k = pQueue.size();
+		}
 		
 		for(int i = 0; i < k; i++) {
 			results.add(new Posting(pQueue.poll().getKey()));
-			
 		}
 		return results;
 	}

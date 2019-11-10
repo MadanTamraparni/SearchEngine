@@ -29,8 +29,12 @@ public class DefaultModel implements RankModel {
 		for(String term: queryTerms){
 			
 			List<Posting> termResults = mIndex.getPostings(term);
-			double wqt = Math.log(1+ (mCorpusSize/termResults.size()));
-			
+			int dft = termResults.size();
+			if(dft == 0) {
+				continue;
+			}
+			double wqt = Math.log(1+ (mCorpusSize/(double)dft));
+
 			for(Posting posting: termResults){
 				int docId = posting.getDocumentId();;
 				double wdt = posting.getWdt(0); // get default wdt
