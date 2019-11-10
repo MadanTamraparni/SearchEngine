@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.List;
-import java.util.Scanner;
 import java.nio.charset.StandardCharsets;
 import org.mapdb.*;
 
@@ -26,7 +25,6 @@ public class DiskIndexWriter {
         File postingFile = new File(path + "/" + postingFileName);
         checkFileExist(postingFile);
         File docWeightsFile = new File(path + "/docWeights.bin");
-        checkFileExist(docWeightsFile);
         RandomAccessFile docWeightsRaf = null;
         try {
 			docWeightsRaf = new RandomAccessFile(docWeightsFile, "r");
@@ -140,6 +138,7 @@ public class DiskIndexWriter {
 				
 				
                 binFile.writeInt(doc.getDocumentId());//write docID
+                
                 double defaultWdt = 1.0+Math.log(tftd);
 				binFile.writeDouble(defaultWdt);//write default wdt
 				doc.addWdt(defaultWdt);
