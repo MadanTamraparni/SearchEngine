@@ -15,6 +15,7 @@ public class Posting {
 	{
 		mDocumentId = documentId;
 		mPositions = new ArrayList<Integer>();
+		mWdt = new ArrayList<Double>();
 	}
 	
 	//add a position 
