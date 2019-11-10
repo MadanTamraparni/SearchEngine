@@ -139,10 +139,21 @@ public class DiskIndexWriter {
 				double avgTftd = docWeightsRaf.readDouble();//read average tftd of a doc
 				
 				
-				binFile.writeInt(doc.getDocumentId());//write docID
-				binFile.writeDouble(1+Math.log(tftd));//write default wdt
-				binFile.writeDouble((2.2 * tftd) / (1.2 * (0.25 + 0.75 * (docLength / docLengthAvg) + tftd)));//write BM25 wdt
-				binFile.writeDouble((1+Math.log(tftd))/(1+Math.log(avgTftd)));//write Wacky wdt
+                binFile.writeInt(doc.getDocumentId());//write docID
+                double defaultWdt = 1.0+Math.log(tftd);
+				binFile.writeDouble(defaultWdt);//write default wdt
+				doc.addWdt(defaultWdt);
+				
+				double bm25Wdt = (2.2 * tftd) / (1.2 * (0.25 + 0.75 * (docLength / docLengthAvg) + tftd));
+				binFile.writeDouble(bm25Wdt);//write BM25 wdt
+				doc.addWdt(bm25Wdt);
+
+				double wackyWdt = (1.0+Math.log(tftd))/(1.0+Math.log(avgTftd));
+				binFile.writeDouble(wackyWdt);//write Wacky wdt
+				doc.addWdt(wackyWdt);
+				// binFile.writeDouble(1+Math.log(tftd));//write default wdt
+				// binFile.writeDouble((2.2 * tftd) / (1.2 * (0.25 + 0.75 * (docLength / docLengthAvg) + tftd)));//write BM25 wdt
+				// binFile.writeDouble((1+Math.log(tftd))/(1+Math.log(avgTftd)));//write Wacky wdt
 				binFile.writeInt(tftd);//write tftd
 				binFile.writeInt(positions.get(0));//write position 1
 				position += 36;
