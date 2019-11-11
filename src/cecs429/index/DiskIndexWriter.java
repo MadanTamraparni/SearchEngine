@@ -97,7 +97,6 @@ public class DiskIndexWriter {
 
     private void vocabTable(long vocabPosition, long postingPosition, DataOutputStream tableStream){
         try{
-            System.out.println("postingPos: " + postingPosition);
             tableStream.writeLong(vocabPosition);
             tableStream.writeLong(postingPosition);
         }catch(IOException e){
@@ -121,7 +120,6 @@ public class DiskIndexWriter {
 		try {
 			List<Posting> postings = index.getPostings(term);
             int docNum = postings.size();
-            System.out.println("dft:" + docNum);
 			binFile.writeInt(docNum);//write dft
 			position += 4;
 			for(int i = 0; i < docNum; i++) {
