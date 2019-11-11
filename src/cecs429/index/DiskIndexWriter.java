@@ -20,6 +20,7 @@ public class DiskIndexWriter {
         File postingFile = new File(path + "\\partialIndex" + "\\postings" + Integer.toString(counter) + ".bin");
         checkFileExist(postingFile);
         File docWeightsFile = new File(path + "\\docWeights.bin");
+
         RandomAccessFile docWeightsRaf = null;
         try {
 			docWeightsRaf = new RandomAccessFile(docWeightsFile, "r");
@@ -33,7 +34,11 @@ public class DiskIndexWriter {
             List<String> vocabList = index.getVocabulary();
             String term;
             
-            DB db = DBMaker.fileDB(path + "/partialIndex" + "/bPlus" + Integer.toString(counter) + ".db").make();
+            DB db = DBMaker.fileDB(path + "/partialIndex" + "/bPlus" + Integer.toString(counter) + ".db")
+            		.closeOnJvmShutdown()
+        			.transactionEnable()
+        			.make();
+            
  		    mBPlus = db.treeMap("map")
  			    .keySerializer(Serializer.STRING)
  			    .valueSerializer(Serializer.LONG)
@@ -70,7 +75,7 @@ public class DiskIndexWriter {
 		long position = 0;
 		try {
 			List<Posting> postings = index.getPostings(term);
-			int docNum = postings.size();
+            int docNum = postings.size();
 			binFile.writeInt(docNum);//write dft
 			position += 4;
 			int prevDocId = 0;
@@ -85,6 +90,7 @@ public class DiskIndexWriter {
 				double docLengthAvg = docWeightsRaf.readDouble();//read docAverage
 				docWeightsRaf.seek(docId*32 +24);
 				double avgTftd = docWeightsRaf.readDouble();//read average tftd of a doc
+
 				if(i == 0)
 				{
 					binFile.writeInt(doc.getDocumentId());//write docID
@@ -94,10 +100,20 @@ public class DiskIndexWriter {
 				{
 					binFile.writeInt(doc.getDocumentId() - prevDocId);
 					prevDocId = doc.getDocumentId();
-				}
-				binFile.writeDouble(1+Math.log(tftd));//write default wdt
-				binFile.writeDouble((2.2 * tftd) / (1.2 * (0.25 + 0.75 * (docLength / docLengthAvg) + tftd)));//write BM25 wdt
-				binFile.writeDouble((1+Math.log(tftd))/(1+Math.log(avgTftd)));//write Wacky wdt
+				}				
+				               
+                double defaultWdt = 1.0+Math.log(tftd);
+				binFile.writeDouble(defaultWdt);//write default wdt
+				doc.addWdt(defaultWdt);
+				
+				double bm25Wdt = (2.2 * tftd) / (1.2 * (0.25 + 0.75 * (docLength / docLengthAvg) + tftd));
+				binFile.writeDouble(bm25Wdt);//write BM25 wdt
+				doc.addWdt(bm25Wdt);
+
+				double wackyWdt = (1.0+Math.log(tftd))/(1.0+Math.log(avgTftd));
+				binFile.writeDouble(wackyWdt);//write Wacky wdt
+				doc.addWdt(wackyWdt);
+				
 				binFile.writeInt(tftd);//write tftd
 				binFile.writeInt(positions.get(0));//write position 1
 				position += 36;
@@ -110,8 +126,9 @@ public class DiskIndexWriter {
 				}
 			}
 		}catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
+
 		return position;
 	}
 

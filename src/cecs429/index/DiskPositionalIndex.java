@@ -12,8 +12,8 @@ public class DiskPositionalIndex implements Index{
 	private RandomAccessFile mPostingList;
 	private BTreeMap<String,Long> mBPlus;
 	
-	public DiskPositionalIndex(String path, int counter){
-
+	public DiskPositionalIndex(String path, int counter)
+	{
 		mPath = path;
 		initialize(mPath + "\\partialIndex" + "\\postings" +  Integer.toString(counter) + ".bin",
 				mPath + "\\partialIndex" + "\\bPlus" + Integer.toString(counter) + ".db");
@@ -26,20 +26,23 @@ public class DiskPositionalIndex implements Index{
 	
 	private void initialize(String postingFileName, String bPlusFileName)
 	{
-		DB db = DBMaker.fileDB(bPlusFileName).make();
+		DB db = DBMaker.fileDB(bPlusFileName)
+				.closeOnJvmShutdown()
+				.transactionEnable()
+				.make();
+
 		mBPlus = db.treeMap("map")
 			.keySerializer(Serializer.STRING)
 			.valueSerializer(Serializer.LONG)
 			.counterEnable()
 			.open();	
-		
+
 		try {
 			mPostingList = new RandomAccessFile(postingFileName, "r");
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 	}
 
 	@Override

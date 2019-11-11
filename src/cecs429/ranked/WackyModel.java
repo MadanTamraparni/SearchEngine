@@ -29,7 +29,10 @@ public class WackyModel implements RankModel {
 			
 			List<Posting> termResults = mIndex.getPostings(term);
 			int dft = termResults.size();
-			double wqt = Math.max(0, Math.log((mCorpusSize - dft) / dft));
+			if(dft == 0) {
+				continue;
+			}
+			double wqt = Math.max(0, Math.log((mCorpusSize - dft) / (double)dft));
 			
 			for(Posting posting: termResults){
 				int docId = posting.getDocumentId();

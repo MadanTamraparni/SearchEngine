@@ -12,12 +12,10 @@ public class BM25Model implements RankModel {
 	
 	private Index mIndex;
 	private int mCorpusSize;
-	private RandomAccessFile mDocWeightsRaf;
 	
-	public BM25Model(Index index, int corpusSize, RandomAccessFile docWeightsRaf){
+	public BM25Model(Index index, int corpusSize){
 		mIndex = index;
 		mCorpusSize = corpusSize;
-		mDocWeightsRaf = docWeightsRaf;
 	}
 
 	@Override
@@ -26,6 +24,10 @@ public class BM25Model implements RankModel {
 		String[] queryTerms = query.split(" ");
 		for(String term: queryTerms){
 			List<Posting> termResults = mIndex.getPostings(term);
+			int dft = termResults.size();
+			if(dft == 0) {
+				continue;
+			}
 			double wqt = Math.max(0.1, Math.log((mCorpusSize - termResults.size() + 0.5) / (termResults.size() + 0.5)));
 			
 			for(Posting posting: termResults){
