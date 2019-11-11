@@ -156,16 +156,16 @@ public class TermDocumentIndexerMain {
 								System.out.print("Enter model (Use number as entry): ");
 								mModelSelection = in.nextLine();
 								if(mModelSelection.equals("1")){
-									postingList = rankedRetrieval.getResults(new DefaultModel(index, corpusSize, docWeightsRaf), query);
+									postingList = rankedRetrieval.getResults(new DefaultModel(index, corpusSize, docWeightsRaf, processor), query);
 									break;
 								} else if(mModelSelection.equals("2")){
-									postingList = rankedRetrieval.getResults(new BM25Model(index, corpusSize), query);
+									postingList = rankedRetrieval.getResults(new BM25Model(index, corpusSize, processor), query);
 									break;
 								} else if(mModelSelection.equals("3")){
-									postingList = rankedRetrieval.getResults(new TfidfModel(index, corpusSize, docWeightsRaf), query);
+									postingList = rankedRetrieval.getResults(new TfidfModel(index, corpusSize, docWeightsRaf, processor), query);
 									break;
 								} else if(mModelSelection.equals("4")){
-									postingList = rankedRetrieval.getResults(new WackyModel(index, corpusSize, docWeightsRaf), query);
+									postingList = rankedRetrieval.getResults(new WackyModel(index, corpusSize, docWeightsRaf, processor), query);
 									break;
 								}
 								System.out.println("Please only select option above.");
