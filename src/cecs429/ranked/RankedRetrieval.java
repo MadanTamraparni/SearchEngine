@@ -13,7 +13,7 @@ import cecs429.index.Posting;
 
 public class RankedRetrieval {
 	
-	public List<Posting>getResults(RankModel rankModel, String query, int k) throws IOException{
+	public static List<Posting>getResults(RankModel rankModel, String query, int k) throws IOException{
 		HashMap<Integer,Double> Ad = rankModel.rank(query);
 		List<Posting> results = new ArrayList<Posting>();
 		
@@ -34,7 +34,7 @@ public class RankedRetrieval {
 		return results;
 	}
 	
-	public List<Posting>getResults(RankModel rankModel, String query) throws IOException{
+	public static List<Posting>getResults(RankModel rankModel, String query) throws IOException{
 		return getResults(rankModel, query, 10);
 	}
 }
