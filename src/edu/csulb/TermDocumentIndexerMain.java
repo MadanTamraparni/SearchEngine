@@ -33,7 +33,7 @@ public class TermDocumentIndexerMain {
 	public static final String QUIT_STR = "q";
 	public static final String INDEX_STR = "index";
 	public static final String VOCAB_STR = "vocab";
-	public static final int MAX_INDEX_SIZE = 10;
+	public static final int MAX_INDEX_SIZE = 100;
 
 	public static void main(String[] args)
 	{
@@ -54,7 +54,7 @@ public class TermDocumentIndexerMain {
 		// Making document corpus
 
 		// Commented line below is to handle text file
-		DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(new File(path).toPath(), ".json");
+		DocumentCorpus corpus = DirectoryCorpus.loadJsonDirectory(new File(path).toPath(), ".json");
 		int corpusSize = corpus.getCorpusSize();
 		
 		pathDisk = "F:\\Study\\Fall\\CECS529\\Project\\SearchEngine\\src\\indexBin";
@@ -72,7 +72,7 @@ public class TermDocumentIndexerMain {
 		}
 		
 		//DiskIndexWriter indexDisk = new DiskIndexWriter();
-		pathDisk = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
+	//	pathDisk = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
 //		indexDisk.WriteIndex(index, pathDisk);
 		//DiskPositionalIndex diskPosition = new DiskPositionalIndex(pathDisk);
 		//for(String i : diskPosition.getVocabulary()) System.out.println(i);
@@ -131,8 +131,9 @@ public class TermDocumentIndexerMain {
             QueryComponent queryComponent = queryParser.parseQuery(query);
             TokenProcessor processor = new BasicTokenProcessor();
             List<Posting> postingList = queryComponent.getPostings(index, processor);
-
+//            System.out.println("Size = " + postingList.size());
             for (Posting p : postingList) {
+            	System.out.println("Doc ID = " + p.getDocumentId());
 				System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
             }
             System.out.println("Posting List size = " + postingList.size());
@@ -160,7 +161,6 @@ public class TermDocumentIndexerMain {
 		SpimiIndexWriter spimiIndexWriter = new SpimiIndexWriter(path);
 		Iterable<Document> it = corpus.getDocuments();
 		File docWeightsFile = new File(path + "/docWeights.bin");
-
 		try {
 			FileOutputStream docWeightsFos = new FileOutputStream(docWeightsFile);
 			DataOutputStream docWeightsDos = new DataOutputStream(docWeightsFos);
@@ -176,9 +176,7 @@ public class TermDocumentIndexerMain {
 				int currentPosition = -1;
 				int docId = doc.getId();
 				EnglishTokenStream eng = new EnglishTokenStream(doc.getContent());
-				Iterable<String> strIter = eng.getTokens();
-				
-				
+				Iterable<String> strIter = eng.getTokens();	
 				for(String token : strIter)
 				{
 					docLength++;
@@ -186,13 +184,7 @@ public class TermDocumentIndexerMain {
 					for(String newToken:tokenList)
 					{
 						currentPosition++;
-						index.addTerm(newToken, docId, currentPosition);
-					
-						if(MAX_INDEX_SIZE == index.getIndexSize())
-						{
-							if(spimiIndexWriter.writePartialIndex(index))
-								index = new PositionalInvertedIndex();
-						}
+						index.addTerm(newToken, docId, currentPosition);					
 						if(wdt.containsKey(newToken)){
 							wdt.put(newToken,wdt.get(newToken) + 1);
 						}else {
@@ -200,7 +192,6 @@ public class TermDocumentIndexerMain {
 						}
 					}
 				}
-
 
 				for(Map.Entry<String,Double> entry:wdt.entrySet()){
 					avgTftd += entry.getValue();
@@ -218,15 +209,23 @@ public class TermDocumentIndexerMain {
 				docWeightsDos.writeDouble(avgTftd);//(docID * 32) + 24
 				
 				docLengthAvg += docLength;
+				if(index.getIndexSize() > MAX_INDEX_SIZE)
+				{
+					spimiIndexWriter.writePartialIndex(index);
+					index = new PositionalInvertedIndex();
+				}
 			}
 			docLengthAvg = docLengthAvg/corpus.getCorpusSize();
 			docWeightsDos.writeLong(docLengthAvg);//Last 8 bytes
+			docWeightsDos.flush();
 			docWeightsDos.close();
 
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		if(index.getIndexSize() > 0 )
+			spimiIndexWriter.writePartialIndex(index);
 		
-		return spimiIndexWriter.mergePartialIndex();
+		return spimiIndexWriter.mergePartialIndex(index);
 	}
 }

@@ -43,11 +43,11 @@ public class PhraseLiteral implements QueryComponent {
 		// TODO: program this method. Retrieve the postings for the individual terms in the phrase,
 		// and positional merge them together.
 		
-		List<Posting> firstList = index.getPostings(processor.enhancedProcessToken(mTerms.get(0)).get(0));
+		List<Posting> firstList = index.getPostingsWithPositions(processor.enhancedProcessToken(mTerms.get(0)).get(0));
 		int gap = 1;
 		for(int j=1; j < mTerms.size(); j++)
 		{
-			List<Posting> secondList = index.getPostings(processor.enhancedProcessToken(mTerms.get(j)).get(0));
+			List<Posting> secondList = index.getPostingsWithPositions(processor.enhancedProcessToken(mTerms.get(j)).get(0));
 			List<Posting> temp = new ArrayList<Posting>(); 
 			int firstListSize = firstList.size();
 			int secondListSize = secondList.size();

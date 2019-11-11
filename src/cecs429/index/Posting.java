@@ -15,6 +15,7 @@ public class Posting {
 	{
 		mDocumentId = documentId;
 		mPositions = new ArrayList<Integer>();
+		mWdt = new ArrayList<Double>();
 	}
 	
 	//add a position 
@@ -46,5 +47,10 @@ public class Posting {
 	public void addWdt(double wdt)
 	{
 		mWdt.add(wdt);
+	}
+	
+	public List<Double> getAllWdt()
+	{
+		return mWdt;
 	}
 }

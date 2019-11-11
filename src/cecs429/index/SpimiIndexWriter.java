@@ -9,13 +9,23 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+
+import org.mapdb.BTreeMap;
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
+import org.mapdb.Serializer;
+
+import cecs429.ranked.TfidfModel;
 
 public class SpimiIndexWriter {
 	
-	String mPath;
-	int mIndexCounter;
+	private String mPath;
+	private int mIndexCounter;
+	private BTreeMap<String,Long> mBPlus;
 	List<String> mFullVocabList;
+	
 	public SpimiIndexWriter(String path)
 	{
 		mPath = path;
@@ -26,80 +36,123 @@ public class SpimiIndexWriter {
 	public boolean writePartialIndex(Index index)
 	{
 		DiskIndexWriter diskWriter = new DiskIndexWriter();
+		diskWriter.WriteIndex(index, mPath, mIndexCounter);
 		mIndexCounter++;
-		mFullVocabList.addAll(index.getVocabulary());
-		diskWriter.WriteIndex(index, mPath, new String("/" + Integer.toString(mIndexCounter)));
 		return true;
 	}
 	
-	public DiskPositionalIndex mergePartialIndex()
+	public DiskPositionalIndex mergePartialIndex(Index index)
 	{
-		DiskPositionalIndex finalDiskIndex = new DiskPositionalIndex(mPath);
-		RandomAccessFile[] partialIndexFile = new RandomAccessFile[mIndexCounter]; 
 		DiskPositionalIndex[] partialIndex = new DiskPositionalIndex[mIndexCounter];		
-		for(int i = 1; i < mIndexCounter; i++)
+		for(int i = 0; i < mIndexCounter; i++)
 		{
-			try {
-				partialIndexFile[i] = new RandomAccessFile(new File(mPath + "/postings" + Integer.toString(i) +  ".bin"),"r");
-				partialIndex[i] = new DiskPositionalIndex(mPath);
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			partialIndex[i] = new DiskPositionalIndex(mPath, i);
+			mFullVocabList.addAll(partialIndex[i].getVocabulary());
 		}
-		File finalPosting = new File(mPath + "/postings.bin");
+
+		File finalPosting = new File(mPath + "\\postings.bin");
 		if(finalPosting.exists())
 			finalPosting.delete();
-		else
-			try {
-				finalPosting.createNewFile();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		
+		try {
+			finalPosting.createNewFile();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		FileOutputStream opStream = null;
 		try {
-			opStream = new FileOutputStream(finalPosting);
+			opStream = new FileOutputStream(finalPosting,true);
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		DataOutputStream postingbin = new DataOutputStream(opStream);
-		long[] startOffset = new long[mIndexCounter+1];
-		long[] endOffset = new long[mIndexCounter];
-		Arrays.fill(startOffset, 0);
-		Arrays.fill(endOffset, 0);
+		DB db = DBMaker.fileDB(mPath + "\\bPlus.db").make();
+		mBPlus = db.treeMap("map")
+			    .keySerializer(Serializer.STRING)
+			    .valueSerializer(Serializer.LONG)
+			    .counterEnable()
+			    .createOrOpen();
+		    
+		long postingOffset = 0;
+		Collections.sort(mFullVocabList); //No priority queue and assumed that vocab fits in the memory
 		for(String term : mFullVocabList)
 		{
-			for(int pIndexer = 0; pIndexer < partialIndex.length; pIndexer++)
+			int dft = 0;
+			mBPlus.put(term, postingOffset);			
+			List<Posting> postings = new ArrayList<Posting>();
+			for(int i=0; i < partialIndex.length; i++)
 			{
-				endOffset[pIndexer] = partialIndex[pIndexer].getPostingOffset(term);
-				byte[] byteBuffer = new byte[(int)(endOffset[pIndexer] - startOffset[pIndexer])];
-				try {
-					partialIndexFile[pIndexer].seek(startOffset[pIndexer]);
-					partialIndexFile[pIndexer].read(byteBuffer, (int)startOffset[pIndexer], (int)(endOffset[pIndexer] - startOffset[pIndexer]));
-					postingbin.write(byteBuffer,(int)startOffset[pIndexer],(int)(endOffset[pIndexer] - startOffset[pIndexer]));
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				int tempDft = partialIndex[i].getdft(term);
+				dft = dft + tempDft;
+				List<Posting> result = partialIndex[i].getPostingsWithPositions(term);
+				if(result == null)
+					continue;
+				postings.addAll(result);
+			}			
+			try 
+			{								
+				postingbin.writeInt(dft);
+				postingOffset += 4;
+				int currentDoc = 0;
+				for(int d=0; d < postings.size(); d++)
+				{
+					Posting posting = postings.get(d);
+					if(d == 0)
+					{
+						currentDoc = posting.getDocumentId();
+						postingbin.writeInt(posting.getDocumentId());
+						postingOffset += 4;
+					}
+					else
+					{
+						postingbin.writeInt(posting.getDocumentId() - currentDoc);
+						postingOffset += 4;
+						currentDoc = posting.getDocumentId();
+					}
+					List<Double> wdts = posting.getAllWdt();
+					for(Double w : wdts)
+					{
+						postingbin.writeDouble(w);
+						postingOffset += 8;
+					}
+					List<Integer> postPositions = posting.getPositions();
+					int currentPos = 0;
+					int tftd = postPositions.size();
+					postingbin.writeInt(tftd);
+					postingOffset += 4;
+					for(int i=0; i < tftd; i++)
+					{
+						int postingPos = postPositions.get(i);
+						if(i == 0)
+						{
+							currentPos = postingPos;
+							postingbin.writeInt(postingPos);
+							postingOffset += 4;
+						}
+						else
+						{
+							postingbin.writeInt(postingPos - currentPos);
+							currentPos = postingPos;
+							postingOffset += 4;
+						}
+					}					
 				}
-				startOffset[pIndexer+1] = endOffset[pIndexer];
-			}
-			try {
-				postingbin.flush();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 		try {
+			postingbin.flush();
 			postingbin.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		mBPlus.close();
+		DiskPositionalIndex finalDiskIndex = new DiskPositionalIndex(mPath);
 		return finalDiskIndex;
 	}
+	
 }
