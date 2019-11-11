@@ -24,7 +24,7 @@ public class SpimiIndexWriter {
 	private String mPath;
 	private int mIndexCounter;
 	private BTreeMap<String,Long> mBPlus;
-	List<String> mFullVocabList;
+	private List<String> mFullVocabList;
 	
 	public SpimiIndexWriter(String path)
 	{
@@ -67,10 +67,7 @@ public class SpimiIndexWriter {
 			e.printStackTrace();
 		}
 		DataOutputStream postingbin = new DataOutputStream(opStream);
-		DB db = DBMaker.fileDB(mPath + "\\bPlus.db")
-				.closeOnJvmShutdown()
-				.transactionEnable()
-				.make();
+		DB db = DBMaker.fileDB(mPath + "\\bPlus.db").make();
 		
 		mBPlus = db.treeMap("map")
 			    .keySerializer(Serializer.STRING)

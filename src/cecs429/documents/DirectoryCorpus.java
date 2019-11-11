@@ -161,4 +161,10 @@ public class DirectoryCorpus implements DocumentCorpus {
 		corpus.registerFileDocumentFactory(fileExtension, JsonFileDocument::loadJsonFileDocument);
 		return corpus;
 	}
+	
+	public static DirectoryCorpus loadSPIMIJsonDirectory(Path absolutePath, String fileExtension){
+		DirectoryCorpus corpus = new DirectoryCorpus(absolutePath);
+		corpus.registerFileDocumentFactory(fileExtension, JsonSPIMIDemoFileDocument::loadJsonSPIMIFileDocument);
+		return corpus;
+	}
 }
