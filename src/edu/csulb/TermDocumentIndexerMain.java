@@ -60,13 +60,11 @@ public class TermDocumentIndexerMain {
             System.out.println("Directory does not exist. ");
         }
 		long timeStart = System.currentTimeMillis();
+		
 		// Making document corpus
-
-		// Commented line below is to handle text file
 		DocumentCorpus corpus = DirectoryCorpus.loadJsonDirectory(new File(mCorpusPath).toPath(), ".json");
 		int corpusSize = corpus.getCorpusSize();
 		
-		//pathDisk = "F:\\Study\\Fall\\CECS529\\Project\\SearchEngine\\src\\indexBin";
 		while(true){
 			System.out.print("Enter bin save path: ");
 			mDiskWritePath = in.nextLine();
@@ -149,23 +147,22 @@ public class TermDocumentIndexerMain {
 							System.out.println("2. Okapi BM25 model");
 							System.out.println("3. Tf-idf model");
 							System.out.println("4. Wacky model");
-							RankedRetrieval rankedRetrieval = new RankedRetrieval();
 							RandomAccessFile docWeightsRaf = new RandomAccessFile(new File(mDiskWritePath + "/docWeights.bin"), "r");
 
 							while(true){
 								System.out.print("Enter model (Use number as entry): ");
 								mModelSelection = in.nextLine();
 								if(mModelSelection.equals("1")){
-									postingList = rankedRetrieval.getResults(new DefaultModel(index, corpusSize, docWeightsRaf, processor), query);
+									postingList = RankedRetrieval.getResults(new DefaultModel(index, corpusSize, docWeightsRaf, processor), query);
 									break;
 								} else if(mModelSelection.equals("2")){
-									postingList = rankedRetrieval.getResults(new BM25Model(index, corpusSize, processor), query);
+									postingList = RankedRetrieval.getResults(new BM25Model(index, corpusSize, processor), query);
 									break;
 								} else if(mModelSelection.equals("3")){
-									postingList = rankedRetrieval.getResults(new TfidfModel(index, corpusSize, docWeightsRaf, processor), query);
+									postingList = RankedRetrieval.getResults(new TfidfModel(index, corpusSize, docWeightsRaf, processor), query);
 									break;
 								} else if(mModelSelection.equals("4")){
-									postingList = rankedRetrieval.getResults(new WackyModel(index, corpusSize, docWeightsRaf, processor), query);
+									postingList = RankedRetrieval.getResults(new WackyModel(index, corpusSize, docWeightsRaf, processor), query);
 									break;
 								}
 								System.out.println("Please only select option above.");
@@ -193,12 +190,33 @@ public class TermDocumentIndexerMain {
         }
         in.close();
 	}
+	
+	
+	
 
 	private static void timeConvert(long time){
 		double seconds = time / 1000.0;
 		int min = (int)(seconds/60.0), intSecond = (int)(seconds%60);
 		System.out.println(min + " minute/s " + intSecond + " seconds.");
 	}
+	
+	
+	
+	
+	
+	private static void checkFileExist(File fileCheck){
+        if(fileCheck.exists()){
+            fileCheck.delete();
+            try{
+                fileCheck.createNewFile();
+            } catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
+	
+	
+	
 
 	private static Index indexCorpus(DocumentCorpus corpus, String path){
 		//HashSet<String> vocabulary = new HashSet<>();
@@ -214,6 +232,8 @@ public class TermDocumentIndexerMain {
 		SpimiIndexWriter spimiIndexWriter = new SpimiIndexWriter(path);
 		Iterable<Document> it = corpus.getDocuments();
 		File docWeightsFile = new File(path + "/docWeights.bin");
+		checkFileExist(docWeightsFile);
+		
 		try {
 			FileOutputStream docWeightsFos = new FileOutputStream(docWeightsFile);
 			DataOutputStream docWeightsDos = new DataOutputStream(docWeightsFos);
