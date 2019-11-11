@@ -1,78 +1,91 @@
 package cecs429.index;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import org.mapdb.*;
 
-
 public class DiskPositionalIndex implements Index{
 	private String mPath;
-	private RandomAccessFile mVocabList;
 	private RandomAccessFile mPostingList;
-	private long[] mVocabTable;
 	private BTreeMap<String,Long> mBPlus;
+	
+	public DiskPositionalIndex(String path, int counter)
+	{
+		mPath = path;
+		initialize(mPath + "\\partialIndex" + "\\postings" +  Integer.toString(counter) + ".bin",
+				mPath + "\\partialIndex" + "\\bPlus" + Integer.toString(counter) + ".db");
+	}
+	public DiskPositionalIndex(String path)
+	{
+		mPath = path;
+		initialize(mPath + "\\postings.bin", mPath + "\\bPlus.db");
+	}
+	
+	private void initialize(String postingFileName, String bPlusFileName)
+	{
+		DB db = DBMaker.fileDB(bPlusFileName)
+				.closeOnJvmShutdown()
+				.transactionEnable()
+				.make();
 
-	public DiskPositionalIndex(String path){
-
-		DB db = DBMaker.fileDB(path + "/bPlus.db")
-			.closeOnJvmShutdown()
-			.transactionEnable()
-			.make();
 		mBPlus = db.treeMap("map")
 			.keySerializer(Serializer.STRING)
 			.valueSerializer(Serializer.LONG)
 			.counterEnable()
-			.createOrOpen();
-		
+			.open();	
+
 		try {
-			mPostingList = new RandomAccessFile(path + "/postings.bin", "r");
-			mVocabList = new RandomAccessFile(path + "/vocab.bin", "r");
+			mPostingList = new RandomAccessFile(postingFileName, "r");
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 	}
 
 	@Override
 	public List<Posting> getPostings(String term) {
-		// TODO Auto-generated method stub
 		List<Posting> postings = new ArrayList<Posting>();
-
+		if(!mBPlus.containsKey(term))
+			return postings;
+		
+		
 		long position = mBPlus.get(term);
-		byte[] byteBuffer = new byte[4];
 		try 
 		{
 			mPostingList.seek(position);
-			mPostingList.read(byteBuffer, (int) position, 4);
-			long numOfDocs = ByteBuffer.wrap(byteBuffer).getLong();
+			int numOfDocs = mPostingList.readInt();
 			position += 4;
+			int prevDocId = 0;
 			for(int i=0; i < numOfDocs; i++)
 			{
 				mPostingList.seek(position);
-				mPostingList.read(byteBuffer, (int) position, 4);
-				Posting posting = new Posting(ByteBuffer.wrap(byteBuffer).getInt());
-				position += 4;  
+				int docId = mPostingList.readInt();
+				Posting posting = null;
+				if(i == 0)
+				{
+					 posting = new Posting(docId);
+					 prevDocId = docId;
+				}
+				else
+				{
+					posting = new Posting(prevDocId + docId);
+					prevDocId += docId;
+				}
+				position += 4;
 				for(int x = 0; x < 3; x++)
 				{
 					mPostingList.seek(position);
-					mPostingList.read(byteBuffer, (int) position, 8);
-					posting.addWdt(ByteBuffer.wrap(byteBuffer).getDouble());
-				}
-				long numOfPos = mPostingList.read(byteBuffer, (int) position, 4);
-				for(int j=0; j < numOfPos; j++)
-				{
-					position += 4;
-					mPostingList.seek(position);
-					mPostingList.read(byteBuffer, (int) position, 4);
-					posting.addPosition(ByteBuffer.wrap(byteBuffer).getInt());
+					posting.addWdt(mPostingList.readDouble());
+					position += 8;
 				}
 				postings.add(posting);
+				mPostingList.seek(position);
+				int tftd = mPostingList.readInt();
+				position += 4;
+				position += (tftd * 4);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -84,42 +97,67 @@ public class DiskPositionalIndex implements Index{
 
 	@Override
 	public List<String> getVocabulary() {
-		// TODO Auto-generated method stub
 		return new ArrayList<String>(mBPlus.keySet());
 	}
 	
 	@Override
 	public List<Posting> getPostingsWithPositions(String term) {
 		List<Posting> postings = new ArrayList<Posting>();
-		long position = mBPlus.get(term);
-		byte[] byteBuffer = new byte[4];
+		if(!mBPlus.containsKey(term))
+			return postings;
+		
+		
+		long position = mBPlus.get(term);		
 		try {
 			mPostingList.seek(position);
-			mPostingList.read(byteBuffer, (int) position, 4);
-			long numOfDocs = ByteBuffer.wrap(byteBuffer).getLong();
+			int numOfDocs = mPostingList.readInt(); //dft
 			position += 4;
-			mPostingList.seek(position);
-			mPostingList.read(byteBuffer, (int) position, 4);
-			Posting posting = new Posting(ByteBuffer.wrap(byteBuffer).getInt());
-			position += 4;
-			for(int x = 0; x < 3; x++)
-			{
-				mPostingList.seek(position);
-				mPostingList.read(byteBuffer, (int) position, 8);
-				posting.addWdt(ByteBuffer.wrap(byteBuffer).getDouble());
-				position += 8;
-			}
+			int prevDocId = 0;
 			for(int i=0; i < numOfDocs; i++)
 			{
-				position += 4;  
 				mPostingList.seek(position);
-				long numOfPos = mPostingList.read(byteBuffer, (int) position, 4);
+				int docId = mPostingList.readInt();
+				Posting posting = null;
+				if(i == 0)
+				{
+					 posting = new Posting(docId);
+					 prevDocId = docId;
+				}
+				else
+				{
+					posting = new Posting(prevDocId + docId);
+					prevDocId += docId;
+				}
 				position += 4;
-				for(int j=0; j < numOfPos; j++)
+				for(int x = 0; x < 3; x++)
 				{
 					mPostingList.seek(position);
-					int pos = mPostingList.read(byteBuffer, (int) position, 4);
-					posting.addPosition(pos);
+					posting.addWdt(mPostingList.readDouble());
+					position += 8;
+				}
+				
+				mPostingList.seek(position);
+				int tftd = mPostingList.readInt();
+				position += 4;
+				int prevPosition = 0;
+				for(int j=0; j < tftd; j++)
+				{
+					if(mPostingList.length() < position+4)
+					{
+						System.out.println("Posting = " + mPostingList.length() + " TFTD = " + tftd);
+					}
+					mPostingList.seek(position);
+					int pos = mPostingList.readInt();
+					if(j==0)
+					{
+						posting.addPosition(pos);
+						prevPosition = pos;
+					}
+					else
+					{
+						posting.addPosition(prevPosition+pos);
+						prevPosition += pos;
+					}
 					position += 4;
 				}
 				postings.add(posting);
@@ -132,137 +170,31 @@ public class DiskPositionalIndex implements Index{
 		// TODO Auto-generated method stub
 		return postings;
 	}
-	
-	public long getPostingOffset(String term)
+	public int getdft(String term)
 	{
+		if(!mBPlus.containsKey(term))
+			return 0;
 		long position = mBPlus.get(term);
-		byte[] byteBuffer = new byte[4];
+		
+		int dft = 0;
 		try {
 			mPostingList.seek(position);
-			mPostingList.read(byteBuffer, (int)position, 4);
-			long numOfDocs = ByteBuffer.wrap(byteBuffer).getLong();
-			position += 4;  //
-			position += 24; //scores
-			for(int i=0; i < numOfDocs; i++)
-			{
-				position += 4; 
-				mPostingList.seek(position);
-				long numOfPos = mPostingList.read(byteBuffer, (int) position, 4);
-				position += 4;
-				position += 4*numOfPos; //positions
-			}
-		} catch (IOException e) {
+			dft = mPostingList.readInt();
+		}catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return position;
+		return dft;
+	}
+	@Override
+	public long getByte() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
-	// Locates the byte position of the postings for the given term.
-	// For example, binarySearchVocabulary("angel") will return the byte position
-	// to seek to in postings.bin to find the postings for "angel".
-	private long binarySearchVocabulary(String term) {
-		try{
-		System.out.println("vocab list length: " + mVocabList.length());
-		} catch(IOException e) { e.printStackTrace(); } 
-		// do a binary search over the vocabulary, using the vocabTable and the file vocabList.
-		int i = 0, j = mVocabTable.length / 2 - 1;
-		while (i <= j) {
-			try {
-			System.out.println("i: " + i);
-			System.out.println("j: " + j);
-			int m = (i + j) / 2;
-			System.out.println("m: " + m);
-			long vListPosition = mVocabTable[m * 2];
-			System.out.println("vList: " + vListPosition);
-			// termLength get out of Int
-			int termLength;
-			if (m == mVocabTable.length / 2 - 1) {
-				System.out.println("mVocabTable[m*2]: " + mVocabTable[m*2]);
-				System.out.println("term length:  " + (mVocabList.length() - mVocabTable[m*2]));
-				termLength = (int)(mVocabList.length() - mVocabTable[m*2]);
-			}
-			else {
-				System.out.println("mVocabTable[(m+1)*2]: " + mVocabTable[(m+1)*2]);
-				if((mVocabTable[(m + 1) * 2] - vListPosition) > Integer.MAX_VALUE) System.out.println("out of range");
-				System.out.println("term length: " + (mVocabTable[(m + 1) * 2] - vListPosition));
-				termLength = (int)((mVocabTable[(m + 1) * 2] - vListPosition));
-				System.out.println("termLenght: == " + termLength);
-			}
-
-			mVocabList.seek(vListPosition);
-			System.out.println("term length: " + termLength);
-			byte[] buffer = new byte[termLength];
-			mVocabList.read(buffer, 0, termLength);
-			String fileTerm = new String(buffer, "ASCII");
-			System.out.println("compare term: " + fileTerm);
-			int compareValue = term.compareTo(fileTerm);
-			if (compareValue == 0) {
-				System.out.println("found it");
-				// found it!
-				return mVocabTable[m * 2 + 1];
-			}
-			else if (compareValue < 0) {
-				System.out.println("left tree");
-				j = m - 1;
-			}
-			else {
-				System.out.println("right tree");
-				i = m + 1;
-			}
-			}
-			catch (IOException ex) {
-				System.out.println(ex.toString());
-			}
-		}
-		return -1;
+	@Override
+	public int getIndexSize() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
-
-	// Reads the file vocabTable.bin into memory.
-   private static long[] readVocabTable(String indexName) {
-      try {
-         long[] vocabTable;
-         
-         RandomAccessFile tableFile = new RandomAccessFile(
-          new File(indexName, "vocabTable.bin"),
-          "r");
-         byte[] byteBuffer = new byte[4];
-         tableFile.read(byteBuffer, 0, byteBuffer.length);
-
-		 int tableIndex = 0;
-		 // tableFile size / 16 to get numberOfTerm
-		 System.out.println("table size: " + tableFile.length());
-		 vocabTable = new long[ByteBuffer.wrap(byteBuffer).getInt() * 2];
-         vocabTable = new long[((int)tableFile.length()/16) * 2];
-		 byteBuffer = new byte[8];
-         while (tableFile.read(byteBuffer, 0, byteBuffer.length) > 0) { 
-			// while we keep reading 8 bytes
-            vocabTable[tableIndex] = ByteBuffer.wrap(byteBuffer).getLong();
-            tableIndex++;
-         }
-         tableFile.close();
-         return vocabTable;
-      }
-      catch (FileNotFoundException ex) {
-         System.out.println(ex.toString());
-      }
-      catch (IOException ex) {
-         System.out.println(ex.toString());
-      }
-      return null;
-   }
-
-@Override
-public long getByte() {
-	// TODO Auto-generated method stub
-	return 0;
-}
-
-@Override
-public int getIndexSize() {
-	// TODO Auto-generated method stub
-	return 0;
-}
-
-
 }

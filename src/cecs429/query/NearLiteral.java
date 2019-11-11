@@ -25,8 +25,8 @@ public class NearLiteral implements QueryComponent {
         // TODO Auto-generated method stub
         
         // Creating two posting list for each terms
-        List<Posting> postingTerm1 = index.getPostings(processor.enhancedProcessToken(term1).get(0));
-        List<Posting> postingTerm2 = index.getPostings(processor.enhancedProcessToken(term2).get(0));
+        List<Posting> postingTerm1 = index.getPostingsWithPositions(processor.enhancedProcessToken(term1).get(0));
+        List<Posting> postingTerm2 = index.getPostingsWithPositions(processor.enhancedProcessToken(term2).get(0));
 
         
         List<Posting> Union = new ArrayList<Posting>();

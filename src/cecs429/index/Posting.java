@@ -48,4 +48,9 @@ public class Posting {
 	{
 		mWdt.add(wdt);
 	}
+	
+	public List<Double> getAllWdt()
+	{
+		return mWdt;
+	}
 }

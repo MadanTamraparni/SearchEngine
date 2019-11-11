@@ -91,7 +91,7 @@ public class PositionalInvertedIndex implements Index {
 	@Override
 	public int getIndexSize() {
 		// TODO Auto-generated method stub
-		return mPostingMap.size();
+		return mVocabulary.size();
 	}
 		
 }
