@@ -12,6 +12,7 @@ import cecs429.documents.DirectoryCorpus;
 import cecs429.documents.Document;
 import cecs429.documents.DocumentCorpus;
 import cecs429.documents.FileDocument;
+import cecs429.index.DiskPositionalIndex;
 import cecs429.index.Index;
 import cecs429.index.PositionalInvertedIndex;
 import cecs429.index.Posting;
@@ -67,7 +68,7 @@ public class SearchEngineGui extends JFrame {
 	private String mQuery = null;
 	private RandomAccessFile mDocWeightsRaf;
 	private final int MAX_INDEX_SIZE = 30000;
-	
+
 	private JPanel mContentPane;
 	private JTextField mCorpusPathTextField;
 	private JTextField mQueryTextField;
@@ -366,26 +367,33 @@ public class SearchEngineGui extends JFrame {
 				}
 				
 				String rankMethod = searchTextField.getText();
+				List<Double> accumulator = null;
 				if(!rankMethod.equals("1") && !rankMethod.equals("2") && !rankMethod.equals("3") && !rankMethod.equals("4")){
 					generalTextArea.append("Invalid selection\n");
 					return;
 				}
 				try {
+					RankedRetrieval rankedRetrieval = new RankedRetrieval();
 					if(rankMethod.equals("1")) {
-						mPostingList = RankedRetrieval.getResults(new DefaultModel(mIndex, mCorpusSize, mDocWeightsRaf, processor), mQuery);
+						mPostingList = rankedRetrieval.getResults(new DefaultModel(mIndex, mCorpusSize, mDocWeightsRaf, processor), mQuery);
+						accumulator = rankedRetrieval.getAcculumator();
 					}else if(rankMethod.equals("2")) {
-						mPostingList = RankedRetrieval.getResults(new BM25Model(mIndex, mCorpusSize, processor), mQuery);
+						mPostingList = rankedRetrieval.getResults(new BM25Model(mIndex, mCorpusSize, processor), mQuery);
+						accumulator = rankedRetrieval.getAcculumator();
 					}else if(rankMethod.equals("3")) {
-						mPostingList = RankedRetrieval.getResults(new TfidfModel(mIndex, mCorpusSize, mDocWeightsRaf, processor), mQuery);
+						mPostingList = rankedRetrieval.getResults(new TfidfModel(mIndex, mCorpusSize, mDocWeightsRaf, processor), mQuery);
+						accumulator = rankedRetrieval.getAcculumator();
 					}else if(rankMethod.equals("4")) {
-						mPostingList = RankedRetrieval.getResults(new WackyModel(mIndex, mCorpusSize, mDocWeightsRaf, processor), mQuery);
+						mPostingList = rankedRetrieval.getResults(new WackyModel(mIndex, mCorpusSize, mDocWeightsRaf, processor), mQuery);
+						accumulator = rankedRetrieval.getAcculumator();
 					}
 				}catch(IOException e1) {
 					e1.printStackTrace();
 				}
-				
+				int i = 0;
 				for(Posting p: mPostingList) {
-					listModel.addElement("Title: " + mCorpus.getDocument(p.getDocumentId()).getTitle() + "\n");
+					listModel.addElement("Document: article" + mCorpus.getDocument(p.getDocumentId()).getId() + "-score: " +  accumulator.get(i)+ "\n");
+					i++;
 				}
 				listModel.addElement("Posting List size = " + mPostingList.size() + "\n");
 				mSearchMethod = null;
@@ -452,8 +460,14 @@ public class SearchEngineGui extends JFrame {
 		// Iterate through the tokens in the document, processing them using a BasicTokenProcessor,
 		//		and adding them to the HashSet vocabulary.
 
+		File tmp = new File(path + "\\postings.bin");
+		if(tmp.exists())
+		{
+			return new DiskPositionalIndex(path);
+		}
 		PositionalInvertedIndex index = new PositionalInvertedIndex();
 		SpimiIndexWriter spimiIndexWriter = new SpimiIndexWriter(path);
+		
 		Iterable<Document> it = corpus.getDocuments();
 		File docWeightsFile = new File(path + "/docWeights.bin");
 		checkFileExist(docWeightsFile);
