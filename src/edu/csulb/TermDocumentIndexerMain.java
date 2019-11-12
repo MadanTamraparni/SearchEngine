@@ -42,7 +42,8 @@ public class TermDocumentIndexerMain {
 	public static final String QUIT_STR = "q";
 	public static final String INDEX_STR = "index";
 	public static final String VOCAB_STR = "vocab";
-	public static final int MAX_INDEX_SIZE = 1000000;
+	public static final int MAX_INDEX_SIZE = 30000;
+
 
 	public static void main(String[] args)
 	{
@@ -85,9 +86,12 @@ public class TermDocumentIndexerMain {
 
 		String query = "";
 		TokenProcessor processor = new BasicTokenProcessor();
-		List<Posting> postingList = new ArrayList<Posting>();
+		
+		
 		// menu for handling special queries
         while(true){
+        	List<Posting> postingList = new ArrayList<Posting>();
+        	List<Double> accumulator = null;
             System.out.print("Enter search query: ");
             query = in.nextLine();
             if(query.equals(QUIT_STR))
@@ -152,17 +156,22 @@ public class TermDocumentIndexerMain {
 							while(true){
 								System.out.print("Enter model (Use number as entry): ");
 								mModelSelection = in.nextLine();
+								RankedRetrieval rankedRetrieval = new RankedRetrieval();
 								if(mModelSelection.equals("1")){
-									postingList = RankedRetrieval.getResults(new DefaultModel(index, corpusSize, docWeightsRaf, processor), query);
+									postingList = rankedRetrieval.getResults(new DefaultModel(index, corpusSize, docWeightsRaf, processor), query);
+									accumulator = rankedRetrieval.getAcculumator();
 									break;
 								} else if(mModelSelection.equals("2")){
-									postingList = RankedRetrieval.getResults(new BM25Model(index, corpusSize, processor), query);
+									postingList = rankedRetrieval.getResults(new BM25Model(index, corpusSize, processor), query);
+									accumulator = rankedRetrieval.getAcculumator();
 									break;
 								} else if(mModelSelection.equals("3")){
-									postingList = RankedRetrieval.getResults(new TfidfModel(index, corpusSize, docWeightsRaf, processor), query);
+									postingList = rankedRetrieval.getResults(new TfidfModel(index, corpusSize, docWeightsRaf, processor), query);
+									accumulator = rankedRetrieval.getAcculumator();
 									break;
 								} else if(mModelSelection.equals("4")){
-									postingList = RankedRetrieval.getResults(new WackyModel(index, corpusSize, docWeightsRaf, processor), query);
+									postingList = rankedRetrieval.getResults(new WackyModel(index, corpusSize, docWeightsRaf, processor), query);
+									accumulator = rankedRetrieval.getAcculumator();
 									break;
 								}
 								System.out.println("Please only select option above.");
@@ -181,10 +190,14 @@ public class TermDocumentIndexerMain {
 					}
 				System.out.println("Please only select option above.");
 			}
-
+			int i = 0;
             for (Posting p : postingList) {
             	System.out.println("Doc ID = " + p.getDocumentId());
 				System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
+				if(accumulator != null) {
+					System.out.println("Accumulator score: " + accumulator.get(i));
+					i += 1;
+				}
             }
             System.out.println("Posting List size = " + postingList.size());
         }
@@ -228,6 +241,11 @@ public class TermDocumentIndexerMain {
 		// Iterate through the tokens in the document, processing them using a BasicTokenProcessor,
 		//		and adding them to the HashSet vocabulary.
 
+		File tmp = new File(path + "\\postings.bin");
+		if(tmp.exists())
+		{
+			return new DiskPositionalIndex(path);
+		}
 		PositionalInvertedIndex index = new PositionalInvertedIndex();
 		SpimiIndexWriter spimiIndexWriter = new SpimiIndexWriter(path);
 		Iterable<Document> it = corpus.getDocuments();
