@@ -26,10 +26,7 @@ public class DiskPositionalIndex implements Index{
 	
 	private void initialize(String postingFileName, String bPlusFileName)
 	{
-		DB db = DBMaker.fileDB(bPlusFileName)
-				.closeOnJvmShutdown()
-				.transactionEnable()
-				.make();
+		DB db = DBMaker.fileDB(bPlusFileName).make();
 
 		mBPlus = db.treeMap("map")
 			.keySerializer(Serializer.STRING)

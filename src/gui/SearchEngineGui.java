@@ -66,7 +66,7 @@ public class SearchEngineGui extends JFrame {
 	private String mSearchMethod = null;
 	private String mQuery = null;
 	private RandomAccessFile mDocWeightsRaf;
-	private final int MAX_INDEX_SIZE = 1000000;
+	private final int MAX_INDEX_SIZE = 10000;
 	
 	private JPanel mContentPane;
 	private JTextField mCorpusPathTextField;

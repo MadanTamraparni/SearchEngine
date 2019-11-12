@@ -2,7 +2,10 @@ package edu.csulb;
 
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -36,28 +39,40 @@ import kotlin.random.Random.Default;
 
 import org.mapdb.*;
 
+import com.google.gson.*;
+
 public class TermDocumentIndexerMain {
 
 	public static final String STEM_STR = "stem";
 	public static final String QUIT_STR = "q";
 	public static final String INDEX_STR = "index";
 	public static final String VOCAB_STR = "vocab";
-	public static final int MAX_INDEX_SIZE = 1000000;
+	public static final int MAX_INDEX_SIZE = 50000;
 
 	public static void main(String[] args)
 	{
 		// User input and check for file directory
 		String mCorpusPath = "", mDiskWritePath = "", mSearchSelection = "", mModelSelection = "";
+		boolean mIsSPIMIIndex = false;
         Scanner in = new Scanner(System.in);
         while(true){
-            System.out.print("Enter document directory: ");
-            mCorpusPath = in.nextLine();
-            File testDir = new File(mCorpusPath);
-            if(testDir.isDirectory()){
-				System.out.println("Directory Existed. Procceed to indexing...");
-				break;
-			}
-            System.out.println("Directory does not exist. ");
+        	System.out.println("Index SPIMI document, Enter Yes or No");
+        	String spimiResult = in.nextLine();
+        	if(spimiResult.equals("Yes"))
+        	{
+        		SPIMIDemo();
+        	}
+        	else
+        	{
+	            System.out.print("Enter document directory: ");
+	            mCorpusPath = in.nextLine();
+	            File testDir = new File(mCorpusPath);
+	            if(testDir.isDirectory()){
+					System.out.println("Directory Existed. Procceed to indexing...");
+					break;
+				}
+	            System.out.println("Directory does not exist. ");
+        	}
         }
 		long timeStart = System.currentTimeMillis();
 		
@@ -75,9 +90,8 @@ public class TermDocumentIndexerMain {
             }
             System.out.println("Directory does not exist. ");
 		}
-		
 		Index index = indexCorpus(corpus, mDiskWritePath);
-
+		
 		long timeEnd = System.currentTimeMillis();
 		// printout time it take to index the corpus
 		// Reimplement later 
@@ -299,5 +313,77 @@ public class TermDocumentIndexerMain {
 			spimiIndexWriter.writePartialIndex(index);
 
 		return spimiIndexWriter.mergePartialIndex(index);		
+	}
+	
+	public static Index SPIMIDemo()
+	{
+		Scanner in = new Scanner(System.in);
+		System.out.print("Enter directory Name : ");
+        String corpusPath = "";
+        while(true)
+        {
+        	corpusPath = in.nextLine();
+        	File testDir = new File(corpusPath);
+            if(testDir.isDirectory()){
+				System.out.println("Directory Existed. Procceed to indexing...");
+				break;
+			}
+            System.out.println("Directory does not exist. ");
+        }
+        DocumentCorpus corpus = DirectoryCorpus.loadSPIMIJsonDirectory(new File(corpusPath).toPath(), ".json");
+		int corpusSize = corpus.getCorpusSize();
+		
+        String spimiIndexPath = "";
+        while(true){
+			System.out.print("Enter SPIMI bin save path: ");
+			spimiIndexPath = in.nextLine();
+            File testDir = new File(spimiIndexPath);
+            if(testDir.isDirectory()){
+				System.out.println("Directory Existed. Procceed to write on disk...");
+				break;
+            }
+            System.out.println("Directory does not exist. ");
+		}
+        
+        Index index = indexCorpus(corpus, spimiIndexPath);
+        System.out.println("Formed SPIMI Index");
+        return index;
+	}
+	
+	public static String parseJSON(File inFile)
+	{
+		JsonParser parser = new JsonParser();
+		JsonObject object = null;
+		String outFilePath = "F:\\Study\\Fall\\CECS529\\Project\\SpimiOutFiles";
+		try {
+			object = (JsonObject) parser.parse(new FileReader(inFile));
+		} catch (JsonIOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonSyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		JsonArray arrObject = object.getAsJsonArray("documents");
+		int index = 1;		
+		for(int i =0; i < arrObject.size(); i++)
+		{
+			JsonObject obj = (JsonObject)arrObject.get(i);
+			File outFile = new File(outFilePath + "\\article" + Integer.toString(index) + ".json");
+			FileWriter writer;
+			try {
+				writer = new FileWriter(outFile);
+				writer.write(obj.toString());
+				writer.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			index++;
+		}
+		return outFilePath;
 	}
 }
