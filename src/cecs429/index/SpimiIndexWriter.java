@@ -10,6 +10,7 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import org.mapdb.BTreeMap;
@@ -86,6 +87,8 @@ public class SpimiIndexWriter {
 			for(int i=0; i < partialIndex.length; i++)
 			{
 				int tempDft = partialIndex[i].getdft(term);
+				if(tempDft == 0)
+					continue;
 				dft = dft + tempDft;
 				List<Posting> result = partialIndex[i].getPostingsWithPositions(term);
 				if(result == null)
