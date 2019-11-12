@@ -15,13 +15,13 @@ public class DiskPositionalIndex implements Index{
 	public DiskPositionalIndex(String path, int counter)
 	{
 		mPath = path;
-		initialize(mPath + "\\partialIndex" + "\\postings" +  Integer.toString(counter) + ".bin",
-				mPath + "\\partialIndex" + "\\bPlus" + Integer.toString(counter) + ".db");
+		initialize(mPath + "/partialIndex" + "/postings" +  Integer.toString(counter) + ".bin",
+				mPath + "/partialIndex" + "/bPlus" + Integer.toString(counter) + ".db");
 	}
 	public DiskPositionalIndex(String path)
 	{
 		mPath = path;
-		initialize(mPath + "\\postings.bin", mPath + "\\bPlus.db");
+		initialize(mPath + "/postings.bin", mPath + "/bPlus.db");
 	}
 	
 	private void initialize(String postingFileName, String bPlusFileName)
@@ -35,7 +35,7 @@ public class DiskPositionalIndex implements Index{
 			.keySerializer(Serializer.STRING)
 			.valueSerializer(Serializer.LONG)
 			.counterEnable()
-			.open();	
+			.createOrOpen();	
 
 		try {
 			mPostingList = new RandomAccessFile(postingFileName, "r");

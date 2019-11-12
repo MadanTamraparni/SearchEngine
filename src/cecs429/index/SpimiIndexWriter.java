@@ -50,7 +50,7 @@ public class SpimiIndexWriter {
 			mFullVocabList.addAll(partialIndex[i].getVocabulary());
 		}
 
-		File finalPosting = new File(mPath + "\\postings.bin");
+		File finalPosting = new File(mPath + "/postings.bin");
 		if(finalPosting.exists())
 			finalPosting.delete();
 		try {
@@ -67,7 +67,7 @@ public class SpimiIndexWriter {
 			e.printStackTrace();
 		}
 		DataOutputStream postingbin = new DataOutputStream(opStream);
-		DB db = DBMaker.fileDB(mPath + "\\bPlus.db")
+		DB db = DBMaker.fileDB(mPath + "/bPlus.db")
 				.closeOnJvmShutdown()
 				.transactionEnable()
 				.make();

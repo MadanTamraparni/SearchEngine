@@ -17,9 +17,9 @@ public class DiskIndexWriter {
     public void WriteIndex(Index index, String path, int counter){
     	//Creating only postings file as BPlus tree does not use vocab and vocabTable.bin files to search the terms
     	int postingOffset = 0;
-        File postingFile = new File(path + "\\partialIndex" + "\\postings" + Integer.toString(counter) + ".bin");
+        File postingFile = new File(path + "/partialIndex" + "/postings" + Integer.toString(counter) + ".bin");
         checkFileExist(postingFile);
-        File docWeightsFile = new File(path + "\\docWeights.bin");
+        File docWeightsFile = new File(path + "/docWeights.bin");
 
         RandomAccessFile docWeightsRaf = null;
         try {
@@ -69,28 +69,6 @@ public class DiskIndexWriter {
             }
         }
     }
-<<<<<<< HEAD
-
-    private void vocabTable(long vocabPosition, long postingPosition, DataOutputStream tableStream){
-        try{
-            tableStream.writeLong(vocabPosition);
-            tableStream.writeLong(postingPosition);
-        }catch(IOException e){
-            e.printStackTrace();
-        }
-    }
-
-    private long vocab(String term, FileOutputStream fos){
-        byte[] bytes = term.getBytes(StandardCharsets.UTF_8);
-        try{
-            fos.write(bytes);
-        } catch(IOException e){
-            e.printStackTrace();
-        }
-        return Long.valueOf(bytes.length);
-    }
-=======
->>>>>>> 35c4ef5fd89423006b567bab6e8a23d4ff967b7f
     
     private long posting(FileOutputStream file, Index index, String term, RandomAccessFile docWeightsRaf){
 		DataOutputStream binFile = new DataOutputStream(file);
