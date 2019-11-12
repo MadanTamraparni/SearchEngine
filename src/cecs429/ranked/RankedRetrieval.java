@@ -13,7 +13,9 @@ import cecs429.index.Posting;
 
 public class RankedRetrieval {
 	
-	public static List<Posting>getResults(RankModel rankModel, String query, int k) throws IOException{
+	private List<Double> accumulator = new ArrayList<Double>();
+	
+	public List<Posting>getResults(RankModel rankModel, String query, int k) throws IOException{
 		HashMap<Integer,Double> Ad = rankModel.rank(query);
 		List<Posting> results = new ArrayList<Posting>();
 		
@@ -29,13 +31,19 @@ public class RankedRetrieval {
 		}
 		
 		for(int i = 0; i < k; i++) {
-			results.add(new Posting(pQueue.poll().getKey()));
+			int docId = pQueue.poll().getKey();
+			results.add(new Posting(docId)); //get top k postings from the Priority Queue and add to the list
+			accumulator.add(Ad.get(docId));
 		}
 		return results;
 	}
 	
-	public static List<Posting>getResults(RankModel rankModel, String query) throws IOException{
+	public List<Posting>getResults(RankModel rankModel, String query) throws IOException{
 		return getResults(rankModel, query, 10);
+	}
+	
+	public List<Double> getAcculumator(){
+		return accumulator;
 	}
 }
 
