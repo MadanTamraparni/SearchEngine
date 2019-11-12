@@ -24,13 +24,13 @@ public class SpimiIndexWriter {
 	private String mPath;
 	private int mIndexCounter;
 	private BTreeMap<String,Long> mBPlus;
-	private List<String> mFullVocabList;
+	private HashSet<String> mFullVocabList;
 	
 	public SpimiIndexWriter(String path)
 	{
 		mPath = path;
 		mIndexCounter = 0;
-		mFullVocabList = new ArrayList<String>();
+		mFullVocabList = new HashSet<String>();
 	}
 	
 	public boolean writePartialIndex(Index index)
@@ -76,8 +76,9 @@ public class SpimiIndexWriter {
 			    .createOrOpen();
 		    
 		long postingOffset = 0;
-		Collections.sort(mFullVocabList); //No priority queue and assumed that vocab fits in the memory
-		for(String term : mFullVocabList)
+		List<String> vocabList = new ArrayList<String>(mFullVocabList);
+		Collections.sort(vocabList); //No priority queue and assumed that vocab fits in the memory
+		for(String term : vocabList)
 		{
 			int dft = 0;
 			mBPlus.put(term, postingOffset);			
