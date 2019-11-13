@@ -14,7 +14,6 @@ import java.util.Scanner;
 import cecs429.documents.DirectoryCorpus;
 import cecs429.documents.Document;
 import cecs429.documents.DocumentCorpus;
-import cecs429.index.DiskIndexWriter;
 import cecs429.index.DiskPositionalIndex;
 import cecs429.index.Index;
 import cecs429.index.PositionalInvertedIndex;
@@ -24,7 +23,6 @@ import cecs429.query.BooleanQueryParser;
 import cecs429.query.QueryComponent;
 import cecs429.ranked.BM25Model;
 import cecs429.ranked.DefaultModel;
-import cecs429.ranked.RankModel;
 import cecs429.ranked.RankedRetrieval;
 import cecs429.ranked.TfidfModel;
 import cecs429.ranked.WackyModel;
@@ -32,9 +30,6 @@ import cecs429.text.BasicTokenProcessor;
 import cecs429.text.EnglishTokenStream;
 import cecs429.text.PorterStemmer;
 import cecs429.text.TokenProcessor;
-import kotlin.random.Random.Default;
-
-import org.mapdb.*;
 
 public class TermDocumentIndexerMain {
 
@@ -81,7 +76,6 @@ public class TermDocumentIndexerMain {
 
 		long timeEnd = System.currentTimeMillis();
 		// printout time it take to index the corpus
-		// Reimplement later 
 		timeConvert(timeEnd - timeStart);
 
 		String query = "";
@@ -157,19 +151,19 @@ public class TermDocumentIndexerMain {
 								System.out.print("Enter model (Use number as entry): ");
 								mModelSelection = in.nextLine();
 								RankedRetrieval rankedRetrieval = new RankedRetrieval();
-								if(mModelSelection.equals("1")){
+								if(mModelSelection.equals("1")){ //Default model
 									postingList = rankedRetrieval.getResults(new DefaultModel(index, corpusSize, docWeightsRaf, processor), query);
 									accumulator = rankedRetrieval.getAcculumator();
 									break;
-								} else if(mModelSelection.equals("2")){
+								} else if(mModelSelection.equals("2")){//BM25 model
 									postingList = rankedRetrieval.getResults(new BM25Model(index, corpusSize, processor), query);
 									accumulator = rankedRetrieval.getAcculumator();
 									break;
-								} else if(mModelSelection.equals("3")){
+								} else if(mModelSelection.equals("3")){//Tfidf model
 									postingList = rankedRetrieval.getResults(new TfidfModel(index, corpusSize, docWeightsRaf, processor), query);
 									accumulator = rankedRetrieval.getAcculumator();
 									break;
-								} else if(mModelSelection.equals("4")){
+								} else if(mModelSelection.equals("4")){//Wacky model
 									postingList = rankedRetrieval.getResults(new WackyModel(index, corpusSize, docWeightsRaf, processor), query);
 									accumulator = rankedRetrieval.getAcculumator();
 									break;
@@ -232,7 +226,6 @@ public class TermDocumentIndexerMain {
 	
 
 	private static Index indexCorpus(DocumentCorpus corpus, String path){
-		//HashSet<String> vocabulary = new HashSet<>();
 		BasicTokenProcessor processor = new BasicTokenProcessor();
 
 		// Get all the documents in the corpus by calling GetDocuments().
@@ -258,21 +251,23 @@ public class TermDocumentIndexerMain {
 			double weight;
 			double docLengthAvg = 0;
 			
-			for(Document doc : it){
+			for(Document doc : it){ //for each document
 				HashMap<String, Double> wdt = new HashMap<String,Double>();
+				
 				double docWeights = 0;
 				long docLength = 0; 
 				long docByte = doc.getByte();
 				double avgTftd = 0;
 				int currentPosition = -1;
 				int docId = doc.getId();
+				
 				EnglishTokenStream eng = new EnglishTokenStream(doc.getContent());
 				Iterable<String> strIter = eng.getTokens();	
-				for(String token : strIter)
+				for(String token : strIter) //for each term in the document
 				{
 					docLength++;
-					List<String> tokenList = processor.enhancedProcessToken(token);
-					for(String newToken:tokenList)
+					List<String> tokenList = processor.enhancedProcessToken(token);//normalize the term into a list of token
+					for(String newToken:tokenList) //for each token in the list of token
 					{
 						currentPosition++;
 						index.addTerm(newToken, docId, currentPosition);					
@@ -286,9 +281,9 @@ public class TermDocumentIndexerMain {
 
 				for(Map.Entry<String,Double> entry:wdt.entrySet()){
 					avgTftd += entry.getValue();
-					weight = 1 + Math.log(entry.getValue());
+					weight = 1 + Math.log(entry.getValue()); //default wdt
 					entry.setValue(weight);
-					docWeights += Math.pow(weight, 2.0);
+					docWeights += Math.pow(weight, 2.0); //default Ld
 				}
 				
 				avgTftd = avgTftd/wdt.size();
