@@ -13,21 +13,23 @@ import cecs429.index.Posting;
 
 public class RankedRetrieval {
 	
-	private List<Double> accumulator = new ArrayList<Double>();
+	private List<Double> accumulator = new ArrayList<Double>(); //List of scores for the top k documents
 	
+	/**Get the top k documents based on the query and the chosen rank model**/
 	public List<Posting>getResults(RankModel rankModel, String query, int k) throws IOException{
 		HashMap<Integer,Double> Ad = rankModel.rank(query);
-		List<Posting> results = new ArrayList<Posting>();
+		List<Posting> results = new ArrayList<Posting>(); //List of result postings
 		
+		//Priority Queue
 		PriorityQueue<Map.Entry<Integer,Double>> pQueue = new PriorityQueue<Map.Entry<Integer,Double>>(new scoreComparator());
 		
 		for(Map.Entry<Integer,Double> entry: Ad.entrySet()) {
-			pQueue.add(entry);
+			pQueue.add(entry); //Add all elements of accumulator into the queue
 		}
 		int pQueueSize = pQueue.size();
 		
 		if(pQueueSize < k) {
-			k = pQueue.size();
+			k = pQueue.size(); // if queue size is smaller than k ,set k = queue size
 		}
 		
 		for(int i = 0; i < k; i++) {
@@ -47,7 +49,7 @@ public class RankedRetrieval {
 	}
 }
 
-
+/**Comparator for accumulator**/
 class scoreComparator implements Comparator<Map.Entry<Integer,Double>>{
 
 	@Override
