@@ -2,10 +2,7 @@ package edu.csulb;
 
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -39,40 +36,29 @@ import kotlin.random.Random.Default;
 
 import org.mapdb.*;
 
-import com.google.gson.*;
-
 public class TermDocumentIndexerMain {
 
 	public static final String STEM_STR = "stem";
 	public static final String QUIT_STR = "q";
 	public static final String INDEX_STR = "index";
 	public static final String VOCAB_STR = "vocab";
-	public static final int MAX_INDEX_SIZE = 50000;
+	public static final int MAX_INDEX_SIZE = 30000;
+
 
 	public static void main(String[] args)
 	{
 		// User input and check for file directory
 		String mCorpusPath = "", mDiskWritePath = "", mSearchSelection = "", mModelSelection = "";
-		boolean mIsSPIMIIndex = false;
         Scanner in = new Scanner(System.in);
         while(true){
-        	System.out.println("Index SPIMI document, Enter Yes or No");
-        	String spimiResult = in.nextLine();
-        	if(spimiResult.equals("Yes"))
-        	{
-        		SPIMIDemo();
-        	}
-        	else
-        	{
-	            System.out.print("Enter document directory: ");
-	            mCorpusPath = in.nextLine();
-	            File testDir = new File(mCorpusPath);
-	            if(testDir.isDirectory()){
-					System.out.println("Directory Existed. Procceed to indexing...");
-					break;
-				}
-	            System.out.println("Directory does not exist. ");
-        	}
+            System.out.print("Enter document directory: ");
+            mCorpusPath = in.nextLine();
+            File testDir = new File(mCorpusPath);
+            if(testDir.isDirectory()){
+				System.out.println("Directory Existed. Procceed to indexing...");
+				break;
+			}
+            System.out.println("Directory does not exist. ");
         }
 		long timeStart = System.currentTimeMillis();
 		
@@ -90,8 +76,9 @@ public class TermDocumentIndexerMain {
             }
             System.out.println("Directory does not exist. ");
 		}
-		Index index = indexCorpus(corpus, mDiskWritePath);
 		
+		Index index = indexCorpus(corpus, mDiskWritePath);
+
 		long timeEnd = System.currentTimeMillis();
 		// printout time it take to index the corpus
 		// Reimplement later 
@@ -99,9 +86,12 @@ public class TermDocumentIndexerMain {
 
 		String query = "";
 		TokenProcessor processor = new BasicTokenProcessor();
-		List<Posting> postingList = new ArrayList<Posting>();
+		
+		
 		// menu for handling special queries
         while(true){
+        	List<Posting> postingList = new ArrayList<Posting>();
+        	List<Double> accumulator = null;
             System.out.print("Enter search query: ");
             query = in.nextLine();
             if(query.equals(QUIT_STR))
@@ -166,17 +156,22 @@ public class TermDocumentIndexerMain {
 							while(true){
 								System.out.print("Enter model (Use number as entry): ");
 								mModelSelection = in.nextLine();
+								RankedRetrieval rankedRetrieval = new RankedRetrieval();
 								if(mModelSelection.equals("1")){
-									postingList = RankedRetrieval.getResults(new DefaultModel(index, corpusSize, docWeightsRaf, processor), query);
+									postingList = rankedRetrieval.getResults(new DefaultModel(index, corpusSize, docWeightsRaf, processor), query);
+									accumulator = rankedRetrieval.getAcculumator();
 									break;
 								} else if(mModelSelection.equals("2")){
-									postingList = RankedRetrieval.getResults(new BM25Model(index, corpusSize, processor), query);
+									postingList = rankedRetrieval.getResults(new BM25Model(index, corpusSize, processor), query);
+									accumulator = rankedRetrieval.getAcculumator();
 									break;
 								} else if(mModelSelection.equals("3")){
-									postingList = RankedRetrieval.getResults(new TfidfModel(index, corpusSize, docWeightsRaf, processor), query);
+									postingList = rankedRetrieval.getResults(new TfidfModel(index, corpusSize, docWeightsRaf, processor), query);
+									accumulator = rankedRetrieval.getAcculumator();
 									break;
 								} else if(mModelSelection.equals("4")){
-									postingList = RankedRetrieval.getResults(new WackyModel(index, corpusSize, docWeightsRaf, processor), query);
+									postingList = rankedRetrieval.getResults(new WackyModel(index, corpusSize, docWeightsRaf, processor), query);
+									accumulator = rankedRetrieval.getAcculumator();
 									break;
 								}
 								System.out.println("Please only select option above.");
@@ -195,10 +190,14 @@ public class TermDocumentIndexerMain {
 					}
 				System.out.println("Please only select option above.");
 			}
-
+			int i = 0;
             for (Posting p : postingList) {
             	System.out.println("Doc ID = " + p.getDocumentId());
 				System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
+				if(accumulator != null) {
+					System.out.println("Accumulator score: " + accumulator.get(i));
+					i += 1;
+				}
             }
             System.out.println("Posting List size = " + postingList.size());
         }
@@ -242,6 +241,11 @@ public class TermDocumentIndexerMain {
 		// Iterate through the tokens in the document, processing them using a BasicTokenProcessor,
 		//		and adding them to the HashSet vocabulary.
 
+		File tmp = new File(path + "\\postings.bin");
+		if(tmp.exists())
+		{
+			return new DiskPositionalIndex(path);
+		}
 		PositionalInvertedIndex index = new PositionalInvertedIndex();
 		SpimiIndexWriter spimiIndexWriter = new SpimiIndexWriter(path);
 		Iterable<Document> it = corpus.getDocuments();
@@ -313,77 +317,5 @@ public class TermDocumentIndexerMain {
 			spimiIndexWriter.writePartialIndex(index);
 
 		return spimiIndexWriter.mergePartialIndex(index);		
-	}
-	
-	public static Index SPIMIDemo()
-	{
-		Scanner in = new Scanner(System.in);
-		System.out.print("Enter directory Name : ");
-        String corpusPath = "";
-        while(true)
-        {
-        	corpusPath = in.nextLine();
-        	File testDir = new File(corpusPath);
-            if(testDir.isDirectory()){
-				System.out.println("Directory Existed. Procceed to indexing...");
-				break;
-			}
-            System.out.println("Directory does not exist. ");
-        }
-        DocumentCorpus corpus = DirectoryCorpus.loadSPIMIJsonDirectory(new File(corpusPath).toPath(), ".json");
-		int corpusSize = corpus.getCorpusSize();
-		
-        String spimiIndexPath = "";
-        while(true){
-			System.out.print("Enter SPIMI bin save path: ");
-			spimiIndexPath = in.nextLine();
-            File testDir = new File(spimiIndexPath);
-            if(testDir.isDirectory()){
-				System.out.println("Directory Existed. Procceed to write on disk...");
-				break;
-            }
-            System.out.println("Directory does not exist. ");
-		}
-        
-        Index index = indexCorpus(corpus, spimiIndexPath);
-        System.out.println("Formed SPIMI Index");
-        return index;
-	}
-	
-	public static String parseJSON(File inFile)
-	{
-		JsonParser parser = new JsonParser();
-		JsonObject object = null;
-		String outFilePath = "F:\\Study\\Fall\\CECS529\\Project\\SpimiOutFiles";
-		try {
-			object = (JsonObject) parser.parse(new FileReader(inFile));
-		} catch (JsonIOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JsonSyntaxException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		JsonArray arrObject = object.getAsJsonArray("documents");
-		int index = 1;		
-		for(int i =0; i < arrObject.size(); i++)
-		{
-			JsonObject obj = (JsonObject)arrObject.get(i);
-			File outFile = new File(outFilePath + "\\article" + Integer.toString(index) + ".json");
-			FileWriter writer;
-			try {
-				writer = new FileWriter(outFile);
-				writer.write(obj.toString());
-				writer.close();
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			index++;
-		}
-		return outFilePath;
 	}
 }

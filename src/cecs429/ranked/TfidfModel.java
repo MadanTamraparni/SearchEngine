@@ -32,7 +32,7 @@ public class TfidfModel implements RankModel {
 		for(String term: queryTerms){
 			List<String> tokenList = mProcessor.enhancedProcessToken(term);
 			for(String token: tokenList) {
-				List<Posting> tokenResults = mIndex.getPostings(token);
+				List<Posting> tokenResults = mIndex.getPostingsWithPositions(token);
 				int dft = tokenResults.size();
 				if(dft == 0) {
 					continue;

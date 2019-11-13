@@ -101,23 +101,24 @@ public class DiskIndexWriter {
 				               
                 double defaultWdt = 1.0+Math.log(tftd);
 				binFile.writeDouble(defaultWdt);//write default wdt
-				doc.addWdt(defaultWdt);
+				//doc.addWdt(defaultWdt);
 				
 				double bm25Wdt = (2.2 * tftd) / (1.2 * (0.25 + 0.75 * (docLength / docLengthAvg) + tftd));
 				binFile.writeDouble(bm25Wdt);//write BM25 wdt
-				doc.addWdt(bm25Wdt);
+				//doc.addWdt(bm25Wdt);
 
 				double wackyWdt = (1.0+Math.log(tftd))/(1.0+Math.log(avgTftd));
 				binFile.writeDouble(wackyWdt);//write Wacky wdt
-				doc.addWdt(wackyWdt);
+				//doc.addWdt(wackyWdt);
 				
 				binFile.writeInt(tftd);//write tftd
 				binFile.writeInt(positions.get(0));//write position 1
 				position += 36;
-				
+				int prevPos = positions.get(0);
 				if(positions.size() > 1) {
 					for(int j = 1; j < positions.size(); j++){
-						binFile.writeInt(positions.get(j)-positions.get(j-1));//write the position gap					
+						binFile.writeInt(positions.get(j)-prevPos);//write the position gap		
+						prevPos = positions.get(j);
 						position += 4;
 					}
 				}

@@ -87,6 +87,8 @@ public class SpimiIndexWriter {
 			for(int i=0; i < partialIndex.length; i++)
 			{
 				int tempDft = partialIndex[i].getdft(term);
+				if(tempDft == 0)
+					continue;
 				dft = dft + tempDft;
 				List<Posting> result = partialIndex[i].getPostingsWithPositions(term);
 				if(result == null)
