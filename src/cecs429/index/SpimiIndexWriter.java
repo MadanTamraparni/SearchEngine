@@ -2,13 +2,10 @@ package cecs429.index;
 
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -17,8 +14,6 @@ import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
-
-import cecs429.ranked.TfidfModel;
 
 public class SpimiIndexWriter {
 	
@@ -68,7 +63,7 @@ public class SpimiIndexWriter {
 			e.printStackTrace();
 		}
 		DataOutputStream postingbin = new DataOutputStream(opStream);
-		DB db = DBMaker.fileDB(mPath + "/bPlus.db").make();
+		DB db = DBMaker.fileDB(mPath + "\\bPlus.db").make();
 		
 		mBPlus = db.treeMap("map")
 			    .keySerializer(Serializer.STRING)
