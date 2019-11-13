@@ -10,8 +10,6 @@ import java.util.List;
 import org.mapdb.*;
 
 public class DiskIndexWriter {
-    // this is hard code for testing
-    //private String path = "/mnt/c/Users/nhmin/OneDrive/Documents/DATA/Codes/Projects/SearchEngine/src/indexBin";
 	private BTreeMap<String,Long> mBPlus;
 	
     public void WriteIndex(Index index, String path, int counter){
@@ -56,6 +54,7 @@ public class DiskIndexWriter {
         }
     }
     
+    /**if file exists, delete and create a new one**/
     private void checkFileExist(File fileCheck){
         if(fileCheck.exists()){
             fileCheck.delete();
@@ -73,18 +72,24 @@ public class DiskIndexWriter {
 		try {
 			List<Posting> postings = index.getPostings(term);
             int docNum = postings.size();
+            int prevDocId = 0;
 			binFile.writeInt(docNum);//write dft
 			position += 4;
-			int prevDocId = 0;
+			
 			for(int i = 0; i < docNum; i++) {
+				
 				Posting doc = postings.get(i);
 				int docId = doc.getDocumentId();
+				
 				List<Integer> positions = doc.getPositions();
 				int tftd = positions.size();
+				
 				docWeightsRaf.seek(docId*32 + 8);
 				double docLength = docWeightsRaf.readDouble();//read docLength
+				
 				docWeightsRaf.seek(docWeightsRaf.length()-8);
 				double docLengthAvg = docWeightsRaf.readDouble();//read docAverage
+				
 				docWeightsRaf.seek(docId*32 +24);
 				double avgTftd = docWeightsRaf.readDouble();//read average tftd of a doc
 
@@ -95,21 +100,18 @@ public class DiskIndexWriter {
 				}
 				else
 				{
-					binFile.writeInt(doc.getDocumentId() - prevDocId);
+					binFile.writeInt(doc.getDocumentId() - prevDocId); //write doc gap
 					prevDocId = doc.getDocumentId();
 				}				
 				               
                 double defaultWdt = 1.0+Math.log(tftd);
 				binFile.writeDouble(defaultWdt);//write default wdt
-				//doc.addWdt(defaultWdt);
 				
 				double bm25Wdt = (2.2 * tftd) / (1.2 * (0.25 + 0.75 * (docLength / docLengthAvg) + tftd));
 				binFile.writeDouble(bm25Wdt);//write BM25 wdt
-				//doc.addWdt(bm25Wdt);
 
 				double wackyWdt = (1.0+Math.log(tftd))/(1.0+Math.log(avgTftd));
 				binFile.writeDouble(wackyWdt);//write Wacky wdt
-				//doc.addWdt(wackyWdt);
 				
 				binFile.writeInt(tftd);//write tftd
 				binFile.writeInt(positions.get(0));//write position 1
@@ -124,31 +126,11 @@ public class DiskIndexWriter {
 				}
 			}
 		}catch (IOException e) {
-			//e.printStackTrace();
+			e.printStackTrace();
 		}
 
 		return position;
 	}
-
-    /*private void vocabTable(long vocabPosition, long postingPosition, DataOutputStream tableStream){
-        try{
-            //System.out.println("vocabPos: " + vocabPosition);
-            tableStream.writeLong(vocabPosition);
-            tableStream.writeLong(postingPosition);
-        }catch(IOException e){
-            e.printStackTrace();
-        }
-    }
-
-    private long vocab(String term, FileOutputStream fos){
-        byte[] bytes = term.getBytes(StandardCharsets.UTF_8);
-        try{
-            fos.write(bytes);
-        } catch(IOException e){
-            e.printStackTrace();
-        }
-        return Long.valueOf(bytes.length);
-    }*/
 }
 
 
