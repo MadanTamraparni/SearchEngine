@@ -44,6 +44,7 @@ public class TermDocumentIndexerMain {
 	{
 		// User input and check for file directory
 		String mCorpusPath = "", mDiskWritePath = "", mSearchSelection = "", mModelSelection = "";
+		boolean testPreset = false;
         Scanner in = new Scanner(System.in);
         while(true){
             System.out.print("Enter document directory: ");
@@ -55,11 +56,12 @@ public class TermDocumentIndexerMain {
 			}
             System.out.println("Directory does not exist. ");
         }
-		long timeStart = System.currentTimeMillis();
+		long timeStartCorpus = System.currentTimeMillis();
 		
 		// Making document corpus
 		DocumentCorpus corpus = DirectoryCorpus.loadJsonDirectory(new File(mCorpusPath).toPath(), ".json");
 		int corpusSize = corpus.getCorpusSize();
+		long timeEndCorpus = System.currentTimeMillis();
 		
 		while(true){
 			System.out.print("Enter bin save path: ");
@@ -71,131 +73,182 @@ public class TermDocumentIndexerMain {
             }
             System.out.println("Directory does not exist. ");
 		}
-		
+		long timeStartIndex = System.currentTimeMillis();
 		Index index = indexCorpus(corpus, mDiskWritePath);
-
-		long timeEnd = System.currentTimeMillis();
+		long timeEndIndex = System.currentTimeMillis();
 		// printout time it take to index the corpus
-		timeConvert(timeEnd - timeStart);
+		timeConvert((timeEndCorpus - timeStartCorpus) + (timeEndIndex - timeStartIndex));
 
-		String query = "";
+		String query = "", testSelection = "";
+		boolean testBoolean = false;
+		//Scanner queryScanner, relDocScanner;
 		TokenProcessor processor = new BasicTokenProcessor();
-		
-		
-		// menu for handling special queries
-        while(true){
-        	List<Posting> postingList = new ArrayList<Posting>();
-        	List<Double> accumulator = null;
-            System.out.print("Enter search query: ");
-            query = in.nextLine();
-            if(query.equals(QUIT_STR))
-            {
-            	System.out.println("q entry for quit.");
-            	break;
-            }
-            else if(query.contains(STEM_STR))
-            {
-            	query = query.substring(STEM_STR.length()+1);
-            	PorterStemmer stemmer = new PorterStemmer();
-            	System.out.println("Stemmer Token = " + stemmer.GetStemmedToken(query));
-            	continue;
-            }
-            else if(query.contains(INDEX_STR))
-            {
-            	query = query.substring(INDEX_STR.length()+1);
-            	File testDir = new File(query);
-                if(testDir.isDirectory()){
-    				System.out.println("Directory Existed. Procceed to indexing...");
-    				timeStart = System.currentTimeMillis();
-        			corpus = DirectoryCorpus.loadJsonDirectory(new File(query).toPath(),".json");
-
-        			index = indexCorpus(corpus, mDiskWritePath) ;
-        			timeEnd = System.currentTimeMillis();
-        			timeConvert(timeEnd - timeStart);
-    			}else{
-    				System.out.println("Directory does not exist. ");
-    			}
-                continue;
-            }
-            else if(query.contains(VOCAB_STR))
-            {
-            	List<String> vocabList = index.getVocabulary();
-            	for(int i =0; i < 1000; i++)
-            		System.out.println(vocabList.get(i));
-            	System.out.println("Size of the Vocabulary = " + vocabList.size());
-            	continue;
-			}
-            if(query.length() == 0){
-            	continue;
-
-			}
-			// Query Selecting
-			// Selecting searching method
-			System.out.println("Select query method: ");
-			System.out.println("1. Ranked Retrieval");
-			System.out.println("2. Boolean Retrieval");
-			while(true){
-				System.out.print("Enter query method (Use number as entry): ");
-				mSearchSelection = in.nextLine();
-				if(mSearchSelection.equals("1")){
-						try{
-							// TO-DO: call ranked retrieval
-							System.out.println("Select model:");
-							System.out.println("1. Default rank model");
-							System.out.println("2. Okapi BM25 model");
-							System.out.println("3. Tf-idf model");
-							System.out.println("4. Wacky model");
-							RandomAccessFile docWeightsRaf = new RandomAccessFile(new File(mDiskWritePath + "/docWeights.bin"), "r");
-
-							while(true){
-								System.out.print("Enter model (Use number as entry): ");
-								mModelSelection = in.nextLine();
-								RankedRetrieval rankedRetrieval = new RankedRetrieval();
-								if(mModelSelection.equals("1")){ //Default model
-									postingList = rankedRetrieval.getResults(new DefaultModel(index, corpusSize, docWeightsRaf, processor), query);
-									accumulator = rankedRetrieval.getAcculumator();
-									break;
-								} else if(mModelSelection.equals("2")){//BM25 model
-									postingList = rankedRetrieval.getResults(new BM25Model(index, corpusSize, processor), query);
-									accumulator = rankedRetrieval.getAcculumator();
-									break;
-								} else if(mModelSelection.equals("3")){//Tfidf model
-									postingList = rankedRetrieval.getResults(new TfidfModel(index, corpusSize, docWeightsRaf, processor), query);
-									accumulator = rankedRetrieval.getAcculumator();
-									break;
-								} else if(mModelSelection.equals("4")){//Wacky model
-									postingList = rankedRetrieval.getResults(new WackyModel(index, corpusSize, docWeightsRaf, processor), query);
-									accumulator = rankedRetrieval.getAcculumator();
-									break;
-								}
-								System.out.println("Please only select option above.");
-							}
-						} catch (IOException e){
-							System.out.println("Can't find docWeights.bin");
-						}
+		try{
+			// testFileDir only here for double check if relevance folder exist in corpus
+			// load in queries.text and qrel.text
+			File testFileDir = new File(mCorpusPath + "/relevance");
+			Scanner queryScanner = new Scanner(new File(testFileDir.getAbsolutePath() + "/queries.txt"));
+			Scanner relDocScanner = new Scanner(new File(testFileDir.getAbsolutePath() + "/qrel.txt"));
+			if(testFileDir.exists()){
+				System.out.println("Test file/s existed for corpus. Want to run test?");
+				while(true){
+					System.out.print("[y]es or [n]o: ");
+					testSelection = in.nextLine();
+					if(testSelection.equals("y")){
+						testBoolean = true;
+						break;
+					} else if(testSelection.equals("n")){
 						break;
 					}
-				else if(mSearchSelection.equals("2")){
-						// TO-DO: boolean retrieval
-						BooleanQueryParser queryParser = new BooleanQueryParser();
-						QueryComponent queryComponent = queryParser.parseQuery(query);
-						postingList = queryComponent.getPostings(index, processor);
-						break;
-					}
-				System.out.println("Please only select option above.");
-			}
-			int i = 0;
-            for (Posting p : postingList) {
-            	System.out.println("Doc ID = " + p.getDocumentId());
-				System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
-				if(accumulator != null) {
-					System.out.println("Accumulator score: " + accumulator.get(i));
-					i += 1;
+					System.out.println("Select provided options only.");
 				}
-            }
-            System.out.println("Posting List size = " + postingList.size());
-        }
-        in.close();
+			}
+
+			// menu for handling special queries
+			while(true){
+				List<Posting> postingList = new ArrayList<Posting>();
+				List<Double> accumulator = null;
+				// unless the text file we scanning hit end, it will only allow test query to be pass
+				if(!queryScanner.hasNextLine()) {
+					testBoolean = false;
+					testPreset = false;
+				}
+				//
+				if(testBoolean){
+					query = queryScanner.nextLine();
+					System.out.println("Test Query: " + query);
+				}else{
+					System.out.print("Enter search query: ");
+					query = in.nextLine();
+				}
+				if(query.equals(QUIT_STR))
+				{
+					System.out.println("q entry for quit.");
+					break;
+				}
+				else if(query.contains(STEM_STR))
+				{
+					query = query.substring(STEM_STR.length()+1);
+					PorterStemmer stemmer = new PorterStemmer();
+					System.out.println("Stemmer Token = " + stemmer.GetStemmedToken(query));
+					continue;
+				}
+				else if(query.contains(INDEX_STR))
+				{
+					query = query.substring(INDEX_STR.length()+1);
+					File testDir = new File(query);
+					if(testDir.isDirectory()){
+						System.out.println("Directory Existed. Procceed to indexing...");
+						long timeStart = System.currentTimeMillis();
+						corpus = DirectoryCorpus.loadJsonDirectory(new File(query).toPath(),".json");
+	
+						index = indexCorpus(corpus, mDiskWritePath) ;
+						long timeEnd = System.currentTimeMillis();
+						timeConvert(timeEnd - timeStart);
+					}else{
+						System.out.println("Directory does not exist. ");
+					}
+					continue;
+				}
+				else if(query.contains(VOCAB_STR))
+				{
+					List<String> vocabList = index.getVocabulary();
+					for(int i =0; i < 1000; i++)
+						System.out.println(vocabList.get(i));
+					System.out.println("Size of the Vocabulary = " + vocabList.size());
+					continue;
+				}
+				if(query.length() == 0){
+					continue;
+	
+				}
+				// Query Selecting
+				// Selecting searching method
+				System.out.println("Select query method: ");
+				System.out.println("1. Ranked Retrieval");
+				System.out.println("2. Boolean Retrieval");
+				while(true){
+					if(testBoolean){
+						System.out.println("Test mode is activated. Default rank retrieval.");
+						mSearchSelection = "1";
+					}else{
+						System.out.print("Enter query method (Use number as entry): ");
+						mSearchSelection = in.nextLine();
+					}
+					if(mSearchSelection.equals("1")){
+							try{
+								// to make sure this menu won't repeatedly print during test mode
+								if(!testPreset){
+									// TO-DO: call ranked retrieval
+									System.out.println("Select model:");
+									System.out.println("1. Default rank model");
+									System.out.println("2. Okapi BM25 model");
+									System.out.println("3. Tf-idf model");
+									System.out.println("4. Wacky model");
+									RandomAccessFile docWeightsRaf = new RandomAccessFile(new File(mDiskWritePath + "/docWeights.bin"), "r");
+								}
+	
+								while(true){
+									if(!testPreset){
+										System.out.print("Enter model (Use number as entry): ");
+										mModelSelection = in.nextLine();
+										System.out.println("Same model will be use for rest of query.");
+										testPreset = true;
+									}
+									RankedRetrieval rankedRetrieval = new RankedRetrieval();
+									if(mModelSelection.equals("1")){ //Default model
+										postingList = rankedRetrieval.getResults(new DefaultModel(index, corpusSize, docWeightsRaf, processor), query);
+										accumulator = rankedRetrieval.getAcculumator();
+										break;
+									} else if(mModelSelection.equals("2")){//BM25 model
+										postingList = rankedRetrieval.getResults(new BM25Model(index, corpusSize, processor), query);
+										accumulator = rankedRetrieval.getAcculumator();
+										break;
+									} else if(mModelSelection.equals("3")){//Tfidf model
+										postingList = rankedRetrieval.getResults(new TfidfModel(index, corpusSize, docWeightsRaf, processor), query);
+										accumulator = rankedRetrieval.getAcculumator();
+										break;
+									} else if(mModelSelection.equals("4")){//Wacky model
+										postingList = rankedRetrieval.getResults(new WackyModel(index, corpusSize, docWeightsRaf, processor), query);
+										accumulator = rankedRetrieval.getAcculumator();
+										break;
+									}
+									System.out.println("Please only select option above.");
+								}
+							} catch (IOException e){
+								System.out.println("Can't find docWeights.bin");
+							}
+							break;
+						}
+					else if(mSearchSelection.equals("2")){
+							// TO-DO: boolean retrieval
+							BooleanQueryParser queryParser = new BooleanQueryParser();
+							QueryComponent queryComponent = queryParser.parseQuery(query);
+							postingList = queryComponent.getPostings(index, processor);
+							break;
+						}
+					System.out.println("Please only select option above.");
+				}
+				int i = 0;
+				for (Posting p : postingList) {
+					System.out.println("Doc ID = " + p.getDocumentId());
+					System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
+					if(accumulator != null) {
+						System.out.println("Accumulator score: " + accumulator.get(i));
+						i += 1;
+					}
+				}
+				System.out.println("Posting List size = " + postingList.size());
+			}
+			queryScanner.close();
+			relDocScanner.close();
+
+		} catch(IOException e){
+			System.out.println("queries and/or relerance file not Exist.");
+			e.printStackTrace();
+		}
+		in.close();
+	
 	}
 	
 	

@@ -63,7 +63,7 @@ public class SpimiIndexWriter {
 			e.printStackTrace();
 		}
 		DataOutputStream postingbin = new DataOutputStream(opStream);
-		DB db = DBMaker.fileDB(mPath + "\\bPlus.db").make();
+		DB db = DBMaker.fileDB(mPath + "/bPlus.db").checksumHeaderBypass().make();
 		
 		mBPlus = db.treeMap("map")
 			    .keySerializer(Serializer.STRING)
