@@ -1,5 +1,7 @@
 package cecs429.documents;
 
+import java.util.HashMap;
+
 /**
  * Represents a collection of documents used to build an index.
  */
@@ -18,4 +20,6 @@ public interface DocumentCorpus {
 	 * Returns the document with the given document ID.
 	 */
 	Document getDocument(int id);
+
+	HashMap<Integer, Integer> getDocIndex();
 }

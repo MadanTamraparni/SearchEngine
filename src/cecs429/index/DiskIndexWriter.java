@@ -32,7 +32,10 @@ public class DiskIndexWriter {
             List<String> vocabList = index.getVocabulary();
             String term;
             
-            DB db = DBMaker.fileDB(path + "/partialIndex" + "/bPlus" + Integer.toString(counter) + ".db").make();
+			DB db = DBMaker.fileDB(path + "/partialIndex" + "/bPlus" + Integer.toString(counter) + ".db")
+				.transactionEnable()
+				.checksumHeaderBypass()
+				.make();
             
  		    mBPlus = db.treeMap("map")
  			    .keySerializer(Serializer.STRING)

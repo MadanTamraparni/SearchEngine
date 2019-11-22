@@ -15,6 +15,7 @@ import java.util.function.Predicate;
  * A DirectoryCorpus represents a corpus found in a single directory on a local file system.
  */
 public class DirectoryCorpus implements DocumentCorpus {
+	private HashMap<Integer, Integer> mDocIndex;
 	// The map from document ID to document.
 	private HashMap<Integer, Document> mDocuments;
 	
@@ -54,13 +55,24 @@ public class DirectoryCorpus implements DocumentCorpus {
 		
 		// Next build the mapping from document ID to document.
 		HashMap<Integer, Document> result = new HashMap<>();
+		mDocIndex = new HashMap<>();
 		int nextId = 0;
 		for (Path file : allFiles) {
+			String fileName = file.getFileName().toString();
+			fileName = fileName.substring(0, fileName.length() - getFileExtension(file).length());
+			int fileId = Integer.valueOf(fileName);
 			// Use the registered factory for the file's extension.
+			//result.put(nextId, mFactories.get(getFileExtension(file)).createFileDocument(file, nextId));
+			//System.out.println("File ID: " + fileId);
+			mDocIndex.put(nextId, fileId);
 			result.put(nextId, mFactories.get(getFileExtension(file)).createFileDocument(file, nextId));
 			nextId++;
 		}
 		return result;
+	}
+
+	public HashMap<Integer, Integer> getDocIndex(){
+		return mDocIndex;
 	}
 	
 	/**
@@ -117,6 +129,8 @@ public class DirectoryCorpus implements DocumentCorpus {
 		}
 		return mDocuments.values();
 	}
+
+
 	
 	@Override
 	public int getCorpusSize() {
