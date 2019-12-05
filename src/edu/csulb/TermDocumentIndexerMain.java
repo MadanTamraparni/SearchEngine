@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
 
 import cecs429.documents.DirectoryCorpus;
@@ -33,6 +34,9 @@ import cecs429.text.BasicTokenProcessor;
 import cecs429.text.EnglishTokenStream;
 import cecs429.text.PorterStemmer;
 import cecs429.text.TokenProcessor;
+import kotlin.random.Random.Default;
+
+import org.mapdb.*;
 
 public class TermDocumentIndexerMain {
 
@@ -42,6 +46,8 @@ public class TermDocumentIndexerMain {
 	public static final String VOCAB_STR = "vocab";
 	public static final String TEST_STR = "test";
 	public static final int MAX_INDEX_SIZE = 30000;
+	
+	public static final boolean printQuery = false;
 
 
 	public static void main(String[] args)
@@ -50,6 +56,9 @@ public class TermDocumentIndexerMain {
 		String mCorpusPath = "", mDiskWritePath = "", mSearchSelection = "", mModelSelection = "";
 		boolean testPreset = false;
         Scanner in = new Scanner(System.in);
+        System.out.println("Test Rocchio Classifier, Enter Y for Yes, N for No ");
+        if(in.nextLine().equalsIgnoreCase("y"))
+        	RocchioTest();
         while(true){
             System.out.print("Enter document directory: ");
             mCorpusPath = in.nextLine();
@@ -87,17 +96,18 @@ public class TermDocumentIndexerMain {
 		//Scanner queryScanner, relDocScanner;
 		TokenProcessor processor = new BasicTokenProcessor();
 		try{
-			// menu for handling special queries
-			while(true){
-				List<Posting> postingList = new ArrayList<Posting>();
-				List<Double> accumulator = null;
-
+		
+		// menu for handling special queries
+        while(true){
+        	List<Posting> postingList = new ArrayList<Posting>();
+        	List<Double> accumulator = null;
+				// unless the text file we scanning hit end, it will only allow test query to be pass
 				System.out.print("Enter search query: ");
 				query = in.nextLine();
-				if(query.equals(QUIT_STR))
-				{
-					System.out.println("q entry for quit.");
-					break;
+            if(query.equals(QUIT_STR))
+            {
+            	System.out.println("q entry for quit.");
+            	break;
 				}
 				else if(query.contains(TEST_STR)){
 					File testFileDir = new File(mCorpusPath + "/relevance");
@@ -120,49 +130,49 @@ public class TermDocumentIndexerMain {
 					}
 						System.out.println("Test file not exist for this corpus.");
 						continue;
-				}
-				else if(query.contains(STEM_STR))
-				{
-					query = query.substring(STEM_STR.length()+1);
-					PorterStemmer stemmer = new PorterStemmer();
-					System.out.println("Stemmer Token = " + stemmer.GetStemmedToken(query));
-					continue;
-				}
-				else if(query.contains(INDEX_STR))
-				{
-					query = query.substring(INDEX_STR.length()+1);
-					File testDir = new File(query);
-					if(testDir.isDirectory()){
-						System.out.println("Directory Existed. Procceed to indexing...");
+            }
+            else if(query.contains(STEM_STR))
+            {
+            	query = query.substring(STEM_STR.length()+1);
+            	PorterStemmer stemmer = new PorterStemmer();
+            	System.out.println("Stemmer Token = " + stemmer.GetStemmedToken(query));
+            	continue;
+            }
+            else if(query.contains(INDEX_STR))
+            {
+            	query = query.substring(INDEX_STR.length()+1);
+            	File testDir = new File(query);
+                if(testDir.isDirectory()){
+    				System.out.println("Directory Existed. Procceed to indexing...");
 						long timeStart = System.currentTimeMillis();
-						corpus = DirectoryCorpus.loadJsonDirectory(new File(query).toPath(),".json");
-	
-						index = indexCorpus(corpus, mDiskWritePath) ;
+        			corpus = DirectoryCorpus.loadJsonDirectory(new File(query).toPath(),".json");
+
+        			index = indexCorpus(corpus, mDiskWritePath) ;
 						long timeEnd = System.currentTimeMillis();
-						timeConvert(timeEnd - timeStart);
-					}else{
-						System.out.println("Directory does not exist. ");
-					}
-					continue;
-				}
-				else if(query.contains(VOCAB_STR))
-				{
-					List<String> vocabList = index.getVocabulary();
-					for(int i =0; i < 1000; i++)
-						System.out.println(vocabList.get(i));
-					System.out.println("Size of the Vocabulary = " + vocabList.size());
-					continue;
-				}
-				if(query.length() == 0){
-					continue;
-	
-				}
-				// Query Selecting
-				// Selecting searching method
-				System.out.println("Select query method: ");
-				System.out.println("1. Ranked Retrieval");
-				System.out.println("2. Boolean Retrieval");
-				while(true){
+        			timeConvert(timeEnd - timeStart);
+    			}else{
+    				System.out.println("Directory does not exist. ");
+    			}
+                continue;
+            }
+            else if(query.contains(VOCAB_STR))
+            {
+            	List<String> vocabList = index.getVocabulary();
+            	for(int i =0; i < 1000; i++)
+            		System.out.println(vocabList.get(i));
+            	System.out.println("Size of the Vocabulary = " + vocabList.size());
+            	continue;
+			}
+            if(query.length() == 0){
+            	continue;
+
+			}
+			// Query Selecting
+			// Selecting searching method
+			System.out.println("Select query method: ");
+			System.out.println("1. Ranked Retrieval");
+			System.out.println("2. Boolean Retrieval");
+			while(true){
 					System.out.print("Enter query method (Use number as entry): ");
 					mSearchSelection = in.nextLine();
 
@@ -171,68 +181,67 @@ public class TermDocumentIndexerMain {
 								// to make sure this menu won't repeatedly print during test mode
 								RandomAccessFile docWeightsRaf = new RandomAccessFile(new File(mDiskWritePath + "/docWeights.bin"), "r");
 								
-								// TO-DO: call ranked retrieval
-								System.out.println("Select model:");
-								System.out.println("1. Default rank model");
-								System.out.println("2. Okapi BM25 model");
-								System.out.println("3. Tf-idf model");
-								System.out.println("4. Wacky model");
+							// TO-DO: call ranked retrieval
+							System.out.println("Select model:");
+							System.out.println("1. Default rank model");
+							System.out.println("2. Okapi BM25 model");
+							System.out.println("3. Tf-idf model");
+							System.out.println("4. Wacky model");
 
-								while(true){
-									System.out.print("Enter model (Use number as entry): ");
-									mModelSelection = in.nextLine();
-									RankedRetrieval rankedRetrieval = new RankedRetrieval();
-									if(mModelSelection.equals("1")){ //Default model
-										postingList = rankedRetrieval.getResults(new DefaultModel(index, corpusSize, docWeightsRaf, processor), query);
-										accumulator = rankedRetrieval.getAcculumator();
-										break;
-									} else if(mModelSelection.equals("2")){//BM25 model
-										postingList = rankedRetrieval.getResults(new BM25Model(index, corpusSize, processor), query);
-										accumulator = rankedRetrieval.getAcculumator();
-										break;
-									} else if(mModelSelection.equals("3")){//Tfidf model
-										postingList = rankedRetrieval.getResults(new TfidfModel(index, corpusSize, docWeightsRaf, processor), query);
-										accumulator = rankedRetrieval.getAcculumator();
-										break;
-									} else if(mModelSelection.equals("4")){//Wacky model
-										postingList = rankedRetrieval.getResults(new WackyModel(index, corpusSize, docWeightsRaf, processor), query);
-										accumulator = rankedRetrieval.getAcculumator();
-										break;
-									}
-									System.out.println("Please only select option above.");
+							while(true){
+								System.out.print("Enter model (Use number as entry): ");
+								mModelSelection = in.nextLine();
+								RankedRetrieval rankedRetrieval = new RankedRetrieval();
+								if(mModelSelection.equals("1")){
+									postingList = rankedRetrieval.getResults(new DefaultModel(index, corpusSize, docWeightsRaf, processor), query);
+									accumulator = rankedRetrieval.getAcculumator();
+									break;
+								} else if(mModelSelection.equals("2")){
+									postingList = rankedRetrieval.getResults(new BM25Model(index, corpusSize, processor), query);
+									accumulator = rankedRetrieval.getAcculumator();
+									break;
+								} else if(mModelSelection.equals("3")){
+									postingList = rankedRetrieval.getResults(new TfidfModel(index, corpusSize, docWeightsRaf, processor), query);
+									accumulator = rankedRetrieval.getAcculumator();
+									break;
+								} else if(mModelSelection.equals("4")){
+									postingList = rankedRetrieval.getResults(new WackyModel(index, corpusSize, docWeightsRaf, processor), query);
+									accumulator = rankedRetrieval.getAcculumator();
+									break;
 								}
-							} catch (IOException e){
-								System.out.println("Can't find docWeights.bin");
+								System.out.println("Please only select option above.");
 							}
-							break;
+						} catch (IOException e){
+							System.out.println("Can't find docWeights.bin");
 						}
-					else if(mSearchSelection.equals("2")){
-							// TO-DO: boolean retrieval
-							BooleanQueryParser queryParser = new BooleanQueryParser();
-							QueryComponent queryComponent = queryParser.parseQuery(query);
-							postingList = queryComponent.getPostings(index, processor);
-							break;
-						}
-					System.out.println("Please only select option above.");
-				}
-				int i = 0;
-				for (Posting p : postingList) {
-					System.out.println("Doc ID = " + p.getDocumentId());
-					System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
-					if(accumulator != null) {
-						System.out.println("Accumulator score: " + accumulator.get(i));
-						i += 1;
+						break;
 					}
-				}
-				System.out.println("Posting List size = " + postingList.size());
+				else if(mSearchSelection.equals("2")){
+						// TO-DO: boolean retrieval
+						BooleanQueryParser queryParser = new BooleanQueryParser();
+						QueryComponent queryComponent = queryParser.parseQuery(query);
+						postingList = queryComponent.getPostings(index, processor);
+						break;
+					}
+				System.out.println("Please only select option above.");
 			}
+			int i = 0;
+            for (Posting p : postingList) {
+            	System.out.println("Doc ID = " + p.getDocumentId());
+				System.out.println("Title: " + corpus.getDocument(p.getDocumentId()).getTitle());
+				if(accumulator != null) {
+					System.out.println("Accumulator score: " + accumulator.get(i));
+					i += 1;
+				}
+            }
+            System.out.println("Posting List size = " + postingList.size());
+        }
 
 		} catch(IOException e){
 			System.out.println("queries and/or relerance file not Exist.");
 			e.printStackTrace();
 		}
-		in.close();
-	
+        in.close();
 	}
 
 	private static void corpusTester(Scanner queryScanner, Scanner relDocScanner, String mDiskWritePath, String model, DocumentCorpus corpus, Index index){
@@ -249,10 +258,11 @@ public class TermDocumentIndexerMain {
 			while(queryScanner.hasNextLine()){
 				query = queryScanner.nextLine();
 				totalQuery++;
-				System.out.println("Test Query: " + query);
+				//System.out.println("Test Query: " + query);
 				// TODO: time start
 				long timeStart = System.currentTimeMillis();
 				if(model.equals("1")){ //Default model
+					//System.out.println("test Mode 1");
 					postingList = rankedRetrieval.getResults(new DefaultModel(index, corpusSize, docWeightsRaf, processor), query);
 					accumulator = rankedRetrieval.getAcculumator();
 				} else if(model.equals("2")){//BM25 model
@@ -273,36 +283,37 @@ public class TermDocumentIndexerMain {
 				int loResult = 0;
 				double i = 0, k = 1;
 				HashMap<Integer, Integer> docIndex = corpus.getDocIndex();
-				System.out.println("Posting size :"  + postingList.size());
-				for(Posting abc : postingList){
-					System.out.println(abc.getDocumentId());
-				}
+				//System.out.println("Posting size :"  + postingList.size());
+				/*for(Posting abc : postingList){
+					System.out.println(docIndex.get(abc.getDocumentId()));
+				}*/
 				while(loResult < postingList.size()){
-					System.out.println("docID: " + postingList.get(loResult).getDocumentId() + " in " + docIndex.get(postingList.get(loResult).getDocumentId()));
+					//System.out.println("docID: " + postingList.get(loResult).getDocumentId() + " in " + docIndex.get(postingList.get(loResult).getDocumentId()));
 					if(relList.contains(Integer.toString(docIndex.get(postingList.get(loResult).getDocumentId())))){
-						System.out.println("precision: " + (++i/k));
-						precision.add(i/k);
-
+					//	System.out.println("precision: " + (++i/k));
+						precision.add(++i/k);
 						recall.add(i/relList.size());	
+					}
+					else
+					{
+						precision.add(i/k);
+						recall.add(i/relList.size());
 					}
 					loResult++;
 					k++;
 				}
 				double sum = 0.0;
 				for(double d: precision)
-				{
 					sum += d;
-				}
-				double ap = sum/relList.size();
-				System.out.println("ap: " + ap + " sum: " + sum);
+				
+				double ap = sum/postingList.size();
+				//System.out.println("Average Precision =  " + ap);
 				avgPrecision.add(ap);
 
 				if(!queryScanner.hasNextLine()){
 					// TODO: graph
 
 				}
-				
-
 			}
 			double MAP = 0;
 			for(double i : avgPrecision){
@@ -349,6 +360,7 @@ public class TermDocumentIndexerMain {
 	
 
 	private static Index indexCorpus(DocumentCorpus corpus, String path){
+		//HashSet<String> vocabulary = new HashSet<>();
 		BasicTokenProcessor processor = new BasicTokenProcessor();
 
 		// Get all the documents in the corpus by calling GetDocuments().
@@ -357,7 +369,7 @@ public class TermDocumentIndexerMain {
 		// Iterate through the tokens in the document, processing them using a BasicTokenProcessor,
 		//		and adding them to the HashSet vocabulary.
 
-		File tmp = new File(path + "/postings.bin");
+		File tmp = new File(path + "\\postings.bin");
 		if(tmp.exists())
 		{
 			return new DiskPositionalIndex(path);
@@ -365,7 +377,6 @@ public class TermDocumentIndexerMain {
 		PositionalInvertedIndex index = new PositionalInvertedIndex();
 		SpimiIndexWriter spimiIndexWriter = new SpimiIndexWriter(path);
 		Iterable<Document> it = corpus.getDocuments();
-		
 		File docWeightsFile = new File(path + "/docWeights.bin");
 		checkFileExist(docWeightsFile);
 		
@@ -375,23 +386,22 @@ public class TermDocumentIndexerMain {
 			double weight;
 			double docLengthAvg = 0;
 			
-			for(Document doc : it){ //for each document
-				HashMap<String, Double> wdt = new HashMap<String,Double>();
-				
+			for(Document doc : it){
+				//HashMap<String, Double> wdt = new HashMap<String,Double>();
+				HashMap<String, Double> wdt = doc.getWdtMap();
 				double docWeights = 0;
 				long docLength = 0; 
 				long docByte = doc.getByte();
 				double avgTftd = 0;
 				int currentPosition = -1;
 				int docId = doc.getId();
-				
 				EnglishTokenStream eng = new EnglishTokenStream(doc.getContent());
 				Iterable<String> strIter = eng.getTokens();	
-				for(String token : strIter) //for each term in the document
+				for(String token : strIter)
 				{
 					docLength++;
-					List<String> tokenList = processor.enhancedProcessToken(token);//normalize the term into a list of token
-					for(String newToken:tokenList) //for each token in the list of token
+					List<String> tokenList = processor.enhancedProcessToken(token);
+					for(String newToken:tokenList)
 					{
 						currentPosition++;
 						index.addTerm(newToken, docId, currentPosition);					
@@ -405,9 +415,9 @@ public class TermDocumentIndexerMain {
 
 				for(Map.Entry<String,Double> entry:wdt.entrySet()){
 					avgTftd += entry.getValue();
-					weight = 1 + Math.log(entry.getValue()); //default wdt
+					weight = 1 + Math.log(entry.getValue());
 					entry.setValue(weight);
-					docWeights += Math.pow(weight, 2.0); //default Ld
+					docWeights += Math.pow(weight, 2.0);
 				}
 				
 				avgTftd = avgTftd/wdt.size();
@@ -419,6 +429,8 @@ public class TermDocumentIndexerMain {
 				docWeightsDos.writeDouble(avgTftd);//(docID * 32) + 24
 				
 				docLengthAvg += docLength;
+				doc.setWdtMap(wdt);
+				doc.setLd(docWeights);
 				if(index.getIndexSize() > MAX_INDEX_SIZE)
 				{
 					spimiIndexWriter.writePartialIndex(index);
@@ -436,5 +448,40 @@ public class TermDocumentIndexerMain {
 			spimiIndexWriter.writePartialIndex(index);
 
 		return spimiIndexWriter.mergePartialIndex(index);		
+	}
+	
+	public static void RocchioTest()
+	{
+		String filePath = "";
+		Scanner in = new Scanner(System.in);
+		while(true){
+			System.out.print("Enter Federal docs path: ");
+			filePath = in.nextLine();
+            File testDir = new File(filePath);
+            if(testDir.isDirectory()){
+				System.out.println("Directory Existed. Procceed to write on disk...");
+				break;
+            }
+            System.out.println("Directory does not exist. ");
+		}
+		String jayFilePath = filePath + "\\JAY", hamiltonFilePath = filePath + "\\HAMILTON";
+		String madisonFilePath = filePath + "\\MADISON", dispFilePath = filePath + "\\DISPUTED";
+		
+		DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(new File(filePath+"\\All").toPath(), ".txt");
+		DocumentCorpus jayCorpus = DirectoryCorpus.loadTextDirectory(new File(jayFilePath).toPath(), ".txt");
+		DocumentCorpus hamiltonCorpus = DirectoryCorpus.loadTextDirectory(new File(hamiltonFilePath).toPath(), ".txt");
+		DocumentCorpus madisonCorpus = DirectoryCorpus.loadTextDirectory(new File(madisonFilePath).toPath(), ".txt");
+		DocumentCorpus disputedCorpus = DirectoryCorpus.loadTextDirectory(new File(dispFilePath).toPath(), ".txt");
+		
+		Index index = indexCorpus(corpus, filePath + "\\All" + "\\indexBin");
+		RocchioClassifier rocchioClassifier = new RocchioClassifier(index,corpus, jayCorpus, hamiltonCorpus, madisonCorpus, disputedCorpus);
+		
+		HashMap<String, String> res = rocchioClassifier.classify();
+		//System.out.println("Size = " + res.size());
+		for(Map.Entry<String, String> entry : res.entrySet())
+		{
+			System.out.println(entry.getKey() + " Author = " + entry.getValue());
+		}
+		
 	}
 }
